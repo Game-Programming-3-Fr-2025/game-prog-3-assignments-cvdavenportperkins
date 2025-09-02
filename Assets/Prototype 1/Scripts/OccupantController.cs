@@ -72,4 +72,13 @@ public class OccupantController : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
         rend.material.color = originalColor;
     }
+
+    public void EnforceBounds(Collider2D bounds)
+    {
+        if (!bounds.OverlapPoint(transform.position))
+        {
+            Vector3 direction = (outpostCenter.position - transform.position).normalized;
+            transform.position += direction * Time.deltaTime * roamSpeed;
+        }
+    }
 }
