@@ -26,7 +26,7 @@ public class SoundManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         audioSource = GetComponent<AudioSource>();
         Debug.Log("SoundManager initialized.");
-       
+
         bgmSource = gameObject.AddComponent<AudioSource>();
         bgmSource.clip = bgmClip;
         bgmSource.loop = true;
@@ -47,24 +47,12 @@ public class SoundManager : MonoBehaviour
     public void PlayAccessGrantedSound(Vector3 position) => PlaySoundAtPoint(accessGrantedClip, position);
     public void PlayAccessDeniedSound(Vector3 position) => PlaySoundAtPoint(accessDeniedClip, position);
     public void PlayInfectionSound(Vector3 position) => PlaySoundAtPoint(infectionClip, position);
-    public void PlayGameOverSound() => PlaySoundAtPoint(gameOverClip, Camera.main.transform.position);
-    public void PlayVictorySound() => PlaySoundAtPoint(victoryClip, Camera.main.transform.position);
+    public void PlayGameOverSound() => PlaySoundAtPoint(gameOverClip, Camera.main != null ? Camera.main.transform.position : Vector3.zero);
+    public void PlayVictorySound() => PlaySoundAtPoint(victoryClip, Camera.main != null ? Camera.main.transform.position : Vector3.zero);
 
     public void PlayBGM()
     {
         if (bgmSource.isPlaying) return;
         bgmSource.Play();
-    }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

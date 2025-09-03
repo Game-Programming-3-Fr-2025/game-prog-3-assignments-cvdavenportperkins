@@ -1,9 +1,7 @@
-using NUnit.Framework;
 using System;
-using UnityEngine;
-using TMPro;
 using System.Collections.Generic;
-using UnityEngine.Rendering;
+using TMPro;
+using UnityEngine;
 
 public class InputChallengeController : MonoBehaviour
 {
@@ -11,10 +9,9 @@ public class InputChallengeController : MonoBehaviour
     [SerializeField] private float challengeDuration = 3.5f;
 
     private PlayerController currentPlayer;
-    private OutpostController currentOutpost; 
-        
+    private OutpostController currentOutpost;
+
     private ShapeType expectedShape;
-    private ShapeType targetShape;
     private float timer;
     private bool challengeActive;
 
@@ -23,8 +20,8 @@ public class InputChallengeController : MonoBehaviour
 
     private int totalInputs;
     private float totalDuration;
-    private List<string> promptSequence = new List<string>();
-    private List<GameObject> promptUIElements = new List<GameObject>();
+    private readonly List<string> promptSequence = new();
+    private readonly List<GameObject> promptUIElements = new();
     private int currentInputIndex = 0;
 
     public GameObject promptPrefab;
@@ -32,41 +29,45 @@ public class InputChallengeController : MonoBehaviour
 
     public void DisplayPromptSequence()
     {
+        if (promptPrefab == null || promptContainer == null) return;
+
         foreach (string prompt in promptSequence)
         {
-            GameObject promptUI = Instantiate(promptPrefab, promptContainer.transform);
-            promptUI.GetComponent<TextMeshPro>().text = prompt;
+            var promptUI = Instantiate(promptPrefab, promptContainer.transform);
+            var label = promptUI.GetComponent<TMP_Text>();
+            if (label != null) label.text = prompt;
             promptUIElements.Add(promptUI);
         }
     }
-    
+
     public void SubmitPromptInput(string input)
     {
         if (!challengeActive || currentInputIndex >= promptSequence.Count) return;
 
         if (input == promptSequence[currentInputIndex])
         {
-            Destroy(promptUIElements[currentInputIndex]);
+            if (currentInputIndex < promptUIElements.Count && promptUIElements[currentInputIndex] != null)
+                Destroy(promptUIElements[currentInputIndex]);
+
             currentInputIndex++;
 
             if (currentInputIndex >= promptSequence.Count)
-            { 
+            {
                 ChallengeSucceeded();
             }
-            else
-            {
-                ChallengeFailed();
-            }
+            // else: await next input (no failure on partial progress)
         }
-
-        
+        else
+        {
+            ChallengeFailed();
+        }
     }
 
     public void ConfigureChallenge(int occupantCount, float factionInfectionRatio)
     {
-        int extraInputs = occupantCount / 3;
-        totalInputs = 3 + extraInputs;
-        totalDuration = 3f + (0.5f * extraInputs);
+        int extraInputs = Mathf.FloorToInt(occupantCount / 3f);
+        totalInputs = Mathf.Clamp(3 + extraInputs, 3, 12);
+        totalDuration = Mathf.Clamp(3f + (0.5f * extraInputs), 3f, 10f);
 
         bool includeNumbers = factionInfectionRatio > 0.33f;
 
@@ -88,18 +89,22 @@ public class InputChallengeController : MonoBehaviour
     {
         currentPlayer = player;
         currentOutpost = outpost;
-        
-        var targetShape = FactionManager.GetShape(faction);
-        expectedShape = targetShape; 
-        visualController.SetShape(targetShape);
-        visualController.SetColor(Color.white);
-        timer = challengeDuration;
+
+        expectedShape = FactionManager.GetShape(faction);
+        if (visualController != null)
+        {
+            visualController.SetShape(expectedShape);
+            visualController.SetColor(Color.white);
+        }
+
+        timer = totalDuration > 0f ? totalDuration : challengeDuration;
+        currentInputIndex = 0;
         challengeActive = true;
     }
 
     public List<string> GetPromptSequence()
     {
-        return new List<string> (promptSequence);
+        return new List<string>(promptSequence);
     }
 
     private void Update()
@@ -107,53 +112,45 @@ public class InputChallengeController : MonoBehaviour
         if (!challengeActive) return;
 
         timer -= Time.deltaTime;
-        if (timer <= 0)
+        if (timer <= 0f)
         {
             ChallengeFailed();
-            return;
         }
     }
 
     public void SubmitInput(ShapeType inputShape)
     {
         if (!challengeActive) return;
-        if (inputShape == expectedShape)
-        {
-            ChallengeSucceeded();
-        }
-        else
-        {
-            ChallengeFailed();
-        }
+        if (inputShape == expectedShape) ChallengeSucceeded();
+        else ChallengeFailed();
     }
 
     private void ChallengeSucceeded()
     {
         challengeActive = false;
-        visualController.SetColor(Color.green);
+        if (visualController != null) visualController.SetColor(Color.green);
         OnChallengeSuccess?.Invoke();
-        
-        if (currentPlayer != null && currentOutpost != null)
+
+        if (GameManager.Instance != null) GameManager.Instance.GrantAccess();
+
+        if (currentOutpost != null)
         {
-            HandleChallengeSuccess(currentPlayer, currentOutpost);
+            currentOutpost.AccessGranted();
         }
-        
+
+        if (currentPlayer != null)
+        {
+            // Optional: align player visuals to the outpost faction
+            currentPlayer.UpdateVisuals();
+        }
     }
 
     private void ChallengeFailed()
     {
         challengeActive = false;
-        visualController.SetColor(Color.red);
+        if (visualController != null) visualController.SetColor(Color.red);
         OnChallengeFailure?.Invoke();
+
+        if (GameManager.Instance != null) GameManager.Instance.DenyAccess();
     }
-
-    public void HandleChallengeSuccess(PlayerController player, OutpostController outpost)
-    {
-        player.faction = outpost.faction;
-
-        player.UpdateVisuals();
-
-        outpost.AccessGranted(player);
-    }
-
 }

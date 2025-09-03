@@ -5,12 +5,23 @@ public class FactionManager : MonoBehaviour
 {
     public static int totalOccupants = 0;
     public static int infectedCount = 0;
-    public static float InfectionRatio => totalOccupants ==0 ? 0f : (float)infectedCount / totalOccupants;
+    public static float InfectionRatio => totalOccupants == 0 ? 0f : (float)infectedCount / totalOccupants;
+
+    public static void RegisterOccupant()
+    {
+        totalOccupants++;
+    }
+
+    public static void UnregisterOccupant(bool wasInfected)
+    {
+        totalOccupants = Mathf.Max(0, totalOccupants - 1);
+        if (wasInfected) infectedCount = Mathf.Max(0, infectedCount - 1);
+    }
 
     public static void ReportInfection()
     {
         infectedCount++;
-        Debug.Log($"Infection reported. Current ratio: {InfectionRatio:P0}"); 
+        Debug.Log($"Infection reported. Current ratio: {InfectionRatio:P0}");
     }
 
     public static void ResetInfection()
@@ -20,7 +31,7 @@ public class FactionManager : MonoBehaviour
         Debug.Log("Infection state reset");
     }
 
-   public static readonly Dictionary<FactionType, Color> factionColors = new()
+    public static readonly Dictionary<FactionType, Color> factionColors = new()
     {
         { FactionType.Yellow, Color.yellow },
         { FactionType.Cyan, Color.cyan },
@@ -36,12 +47,11 @@ public class FactionManager : MonoBehaviour
 
     public static Color GetColor(FactionType faction)
     {
-        return factionColors.TryGetValue(faction, out var color) ? color : default(Color);
+        return factionColors.TryGetValue(faction, out var color) ? color : Color.white;
     }
 
     public static ShapeType GetShape(FactionType faction)
     {
-        return factionShapes.TryGetValue(faction, out var shape) ? shape : default(ShapeType);
+        return factionShapes.TryGetValue(faction, out var shape) ? shape : ShapeType.Square;
     }
-     
 }

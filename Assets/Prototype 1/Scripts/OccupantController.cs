@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class OccupantController : MonoBehaviour
@@ -13,12 +11,12 @@ public class OccupantController : MonoBehaviour
     [Header("Infection Settings")]
     [SerializeField] public float infectionRadius1 = 2f;
     [SerializeField] public float infectionRadius2 = 4f;
-    [SerializeField] public float infectionChance1 = 0.50f; // 50% chance to infect per .5 seconds
-    [SerializeField] public float infectionChance2 = 0.33f; // 33% chance to infect 
-    [SerializeField] public float infectionRate = 0.5f; // infectionRadius 2 = infectionChance 2, infection radius 1 = infectionChance 1 + 2
+    [SerializeField] public float infectionChance1 = 0.50f; // inner radius chance
+    [SerializeField] public float infectionChance2 = 0.33f; // outer radius chance
+    [SerializeField] public float infectionRate = 0.5f; // seconds between spread attempts
     private float infectionTimer = 0f;
     public bool isInfected;
-    
+
     [Header("Factions and Visuals")]
     public Color infectionColor = Color.green;
     public Color currentColor;
@@ -26,19 +24,21 @@ public class OccupantController : MonoBehaviour
     public Animator animator;
 
     public Vector3 roamTarget;
-    private Renderer rend;
-    
+    private SpriteRenderer rend;
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start() 
+    void Start()
     {
         SetNewRoamTarget();
-        rend = GetComponent<Renderer>();
-        FactionManager.totalOccupants++;
+        rend = GetComponent<SpriteRenderer>();
+        if (rend != null && currentColor != default) rend.color = currentColor;
+        FactionManager.RegisterOccupant();
     }
 
-    // Update is called once per frame
+    void OnDestroy()
+    {
+        FactionManager.UnregisterOccupant(isInfected);
+    }
+
     void Update()
     {
         if (isInfected)
@@ -50,7 +50,7 @@ public class OccupantController : MonoBehaviour
                 TryInfectNearby();
             }
 
-            OccupantController target = FindNearestUnifected(transform.position);
+            var target = FindNearestUninfected(transform.position);
             if (target != null)
             {
                 Vector3 direction = (target.transform.position - transform.position).normalized;
@@ -70,11 +70,11 @@ public class OccupantController : MonoBehaviour
     void SetNewRoamTarget()
     {
         Vector2 randomDirection = Random.insideUnitCircle.normalized;
-        Vector3 targetPosition = outpostCenter.position + new Vector3(randomDirection.x, 0, randomDirection.y) * Random.Range(0, roamRadius);
+        Vector3 targetPosition = outpostCenter.position + new Vector3(randomDirection.x, randomDirection.y, 0f) * Random.Range(0, roamRadius);
         roamTarget = targetPosition;
     }
 
-    void OnTriggerStay(Collider other)
+    void OnTriggerStay2D(Collider2D other)
     {
         if (other.CompareTag("Infected") && !isInfected)
         {
@@ -84,13 +84,17 @@ public class OccupantController : MonoBehaviour
 
     public void Infect()
     {
+        if (isInfected) return;
+
         isInfected = true;
         gameObject.tag = "Infected";
-        rend.material.color = infectionColor;
+        if (rend != null) rend.color = infectionColor;
         if (animator != null) animator.SetTrigger("Infect");
         FactionManager.ReportInfection();
+        SoundManager.instance?.PlayInfectionSound(transform.position);
         Debug.Log($"{gameObject.name} has been assimilated!");
     }
+
     public void FlashTick(Color tickColor)
     {
         StartCoroutine(TickCoroutine(tickColor));
@@ -98,15 +102,16 @@ public class OccupantController : MonoBehaviour
 
     IEnumerator TickCoroutine(Color tickColor)
     {
-        Color originalColor = rend.material.color;
-        rend.material.color = tickColor;
+        if (rend == null) yield break;
+        Color originalColor = rend.color;
+        rend.color = tickColor;
         yield return new WaitForSeconds(0.2f);
-        rend.material.color = originalColor;
+        rend.color = originalColor;
     }
 
     private void TryInfectNearby()
     {
-        OccupantController[] allOccupants = Object.FindObjectsByType<OccupantController>(
+        OccupantController[] allOccupants = FindObjectsByType<OccupantController>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None
         );
@@ -138,12 +143,12 @@ public class OccupantController : MonoBehaviour
         }
     }
 
-    public static OccupantController FindNearestUnifected(Vector3 origin)
+    public static OccupantController FindNearestUninfected(Vector3 origin)
     {
-        OccupantController[] allOccupants = Object.FindObjectsByType<OccupantController>(
+        OccupantController[] allOccupants = FindObjectsByType<OccupantController>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None
-            );
+        );
         OccupantController nearest = null;
         float minDistance = float.MaxValue;
 

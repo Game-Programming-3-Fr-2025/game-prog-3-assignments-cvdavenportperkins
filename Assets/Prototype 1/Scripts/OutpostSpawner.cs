@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class OutpostSpawner : MonoBehaviour
 {
@@ -7,17 +7,20 @@ public class OutpostSpawner : MonoBehaviour
     public int totalOutposts = 12;
     public float spawnBuffer = 0.5f;
 
-    private List<Vector3> placedPositions = new List<Vector3>();
+    private readonly List<Vector3> placedPositions = new();
 
     void Start()
     {
         for (int i = 0; i < totalOutposts; i++)
         {
-            OutpostConfig config = GenerateConfig(); // Occupant count, faction, shape
+            OutpostConfig config = GenerateConfig();
             Vector3 spawnPos = GetValidPosition(config.colliderRadius);
             GameObject outpostGO = Instantiate(outpostPrefab, spawnPos, Quaternion.identity);
-            outpostGO.GetComponent<OutpostController>().Initialize(config);
+            var controller = outpostGO.GetComponent<OutpostController>();
+            controller.Initialize(config);
             placedPositions.Add(spawnPos);
+
+            if (GameManager.Instance != null) GameManager.Instance.RegisterOutpost();
         }
     }
 
@@ -25,10 +28,9 @@ public class OutpostSpawner : MonoBehaviour
     {
         int occupantCount = Random.Range(3, 10);
         FactionType faction = (FactionType)Random.Range(0, System.Enum.GetValues(typeof(FactionType)).Length);
-        float colliderRadius = Mathf.Sqrt((2f * occupantCount) / Mathf.PI) + spawnBuffer;
-        ShapeType shape = GetShapeForFaction(faction);
-        Color color = GetColorForFaction(faction);
-        return new OutpostConfig(occupantCount, faction, colliderRadius, shape, color);
+        ShapeType shape = FactionManager.GetShape(faction);
+        Color color = FactionManager.GetColor(faction);
+        return new OutpostConfig(occupantCount, faction, spawnBuffer, shape, color);
     }
 
     private Vector3 GetValidPosition(float radius)
@@ -37,16 +39,15 @@ public class OutpostSpawner : MonoBehaviour
         int attempts = 0;
         do
         {
-            candidate = GetRandomPositionInHelixField();
+            candidate = GetRandomPositionInField();
             attempts++;
-        } 
-        while (IsValidSpawnCandidate(candidate, radius) && attempts < 100);
-        
-        if (attempts >= 100) // Prevent infinite loop
+        }
+        while (!IsValidSpawnCandidate(candidate, radius) && attempts < 100);
+
+        if (attempts >= 100)
             Debug.LogWarning("Failed to place outpost without overlap");
-            
+
         return candidate;
-         
     }
 
     bool IsValidSpawnCandidate(Vector3 candidate, float radius)
@@ -60,34 +61,10 @@ public class OutpostSpawner : MonoBehaviour
         return true;
     }
 
-    private Vector3 GetRandomPositionInHelixField()
+    private Vector3 GetRandomPositionInField()
     {
-        
         float x = Random.Range(-10f, 10f);
-        float z = Random.Range(-10f, 10f);
-        return new Vector3(x, 0f, z);
+        float y = Random.Range(-10f, 10f);
+        return new Vector3(x, y, 0f);
     }
-
-    private ShapeType GetShapeForFaction(FactionType faction)
-    {
-        switch (faction)
-        {
-            case FactionType.Yellow: return ShapeType.Triangle;
-            case FactionType.Cyan: return ShapeType.Circle;
-            case FactionType.Magenta: return ShapeType.Square;
-            default: return ShapeType.Square;
-        };
-    }
-
-    Color GetColorForFaction(FactionType faction)
-    {
-        switch (faction)
-        {
-            case FactionType.Yellow: return Color.yellow;
-            case FactionType.Cyan: return Color.cyan;
-            case FactionType.Magenta: return Color.magenta;
-            default: return Color.white;
-        }
-    }
-
 }

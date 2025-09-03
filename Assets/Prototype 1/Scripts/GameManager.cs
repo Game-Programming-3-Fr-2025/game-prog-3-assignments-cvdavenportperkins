@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -28,20 +27,36 @@ public class GameManager : MonoBehaviour
         timeRemaining = gameTime;
     }
 
+    public void RegisterOutpost()
+    {
+        totalOutposts++;
+        outpostsRemaining++;
+    }
+
+    public void OnOutpostCaptured()
+    {
+        outpostsRemaining = Mathf.Max(0, outpostsRemaining - 1);
+        if (outpostsRemaining <= 0 && !isGameWon)
+        {
+            isGameWon = true;
+            HandleGameWon();
+        }
+    }
+
     public void GrantAccess()
     {
-
-        SoundManager.instance.PlayAccessGrantedSound(Camera.main.transform.position);
+        SoundManager.instance?.PlayAccessGrantedSound(Camera.main.transform.position);
     }
 
     public void DenyAccess()
     {
-        SoundManager.instance.PlayAccessDeniedSound(Camera.main.transform.position);
+        SoundManager.instance?.PlayAccessDeniedSound(Camera.main.transform.position);
     }
 
     void Update()
     {
         if (isGameOver || isGameWon || isPaused) return;
+
         timeRemaining -= Time.deltaTime;
         if (timeRemaining <= 0)
         {
@@ -49,17 +64,11 @@ public class GameManager : MonoBehaviour
             isGameOver = true;
             HandleGameOver();
         }
-        if (outpostsRemaining <= 0 && !isGameWon)
-        {
-            isGameWon = true;
-           HandleGameWon();
-        }
-
     }
 
-    public void HandleGameOver() 
+    public void HandleGameOver()
     {
-        SoundManager.instance.PlayGameOverSound();
+        SoundManager.instance?.PlayGameOverSound();
         Debug.Log("Game Over! Time's up.");
         SceneManager.LoadScene("GameOverScene");
         FactionManager.ResetInfection();
@@ -67,10 +76,9 @@ public class GameManager : MonoBehaviour
 
     public void HandleGameWon()
     {
-        SoundManager.instance.PlayVictorySound();
+        SoundManager.instance?.PlayVictorySound();
         Debug.Log("Congratulations! You've won the game!");
         SceneManager.LoadScene("VictoryScene");
         FactionManager.ResetInfection();
     }
-
-}   
+}

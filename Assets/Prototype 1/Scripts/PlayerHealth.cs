@@ -18,11 +18,12 @@ public class PlayerHealth : MonoBehaviour
         {
             Instantiate(damageEffectPrefab, transform.position, Quaternion.identity);
         }
-        
+
         if (audioSource != null && damageSound != null)
         {
             audioSource.PlayOneShot(damageSound);
         }
+
         currentHealth -= damageAmount;
         if (currentHealth <= 0)
         {
@@ -32,11 +33,9 @@ public class PlayerHealth : MonoBehaviour
 
     public void Die()
     {
-        // Handle player death (e.g., reload scene, show game over screen, etc.)
+        if (GameManager.Instance == null) return;
         GameManager.Instance.isGameOver = true;
         GameManager.Instance.HandleGameOver();
         Debug.Log("Player has died.");
     }
 }
-
-

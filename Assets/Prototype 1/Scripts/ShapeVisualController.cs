@@ -14,30 +14,27 @@ public class ShapeVisualController : MonoBehaviour
         SetShape(shape);
         SetColor(color);
     }
+
     public void SetShape(ShapeType shape)
     {
-        circleVisual.SetActive(shape == ShapeType.Circle);
-        squareVisual.SetActive(shape == ShapeType.Square);
-        triangleVisual.SetActive(shape == ShapeType.Triangle);
+        if (circleVisual != null) circleVisual.SetActive(shape == ShapeType.Circle);
+        if (squareVisual != null) squareVisual.SetActive(shape == ShapeType.Square);
+        if (triangleVisual != null) triangleVisual.SetActive(shape == ShapeType.Triangle);
     }
 
     public void SetColor(Color color)
     {
         var activeVisual = GetActiveVisual();
-        var renderer = activeVisual.GetComponent<SpriteRenderer>();
-        if (renderer != null) renderer.color = color;
+        if (activeVisual == null) return;
+        var sr = activeVisual.GetComponent<SpriteRenderer>();
+        if (sr != null) sr.color = color;
     }
 
     private GameObject GetActiveVisual()
     {
-        if (circleVisual.activeSelf) return circleVisual;
-        if (squareVisual.activeSelf) return squareVisual;
-        if (triangleVisual.activeSelf) return triangleVisual;
+        if (circleVisual != null && circleVisual.activeSelf) return circleVisual;
+        if (squareVisual != null && squareVisual.activeSelf) return squareVisual;
+        if (triangleVisual != null && triangleVisual.activeSelf) return triangleVisual;
         return null;
     }
-
-
-
 }
-
-

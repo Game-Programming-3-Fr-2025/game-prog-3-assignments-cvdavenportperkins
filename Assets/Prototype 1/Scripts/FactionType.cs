@@ -1,7 +1,6 @@
-using UnityEngine;
- public enum FactionType
- {
-     Yellow,
-     Cyan,
-     Magenta,
- }
+public enum FactionType
+{
+    Yellow,
+    Cyan,
+    Magenta,
+}
