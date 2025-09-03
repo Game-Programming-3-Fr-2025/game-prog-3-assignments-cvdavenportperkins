@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public FactionManager faction;
     public float moveSpeed = 5f;
     private Rigidbody rb;
     private Vector2 moveInput;
@@ -18,6 +19,6 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        rb.angularVelocity = moveInput * moveSpeed;
+        rb.linearVelocity = moveInput * moveSpeed;
     }
 }

@@ -6,6 +6,14 @@ public class ShapeVisualController : MonoBehaviour
     [SerializeField] private GameObject squareVisual;
     [SerializeField] private GameObject triangleVisual;
 
+    public void SetFactionVisual(FactionType faction)
+    {
+        ShapeType shape = FactionManager.GetShape(faction);
+        Color color = FactionManager.GetColor(faction);
+
+        SetShape(shape);
+        SetColor(color);
+    }
     public void SetShape(ShapeType shape)
     {
         circleVisual.SetActive(shape == ShapeType.Circle);

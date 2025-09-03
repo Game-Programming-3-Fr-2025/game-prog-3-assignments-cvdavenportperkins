@@ -57,18 +57,20 @@ public class GameManager : MonoBehaviour
 
     }
 
-    private void HandleGameOver() 
+    public void HandleGameOver() 
     {
         SoundManager.instance.PlayGameOverSound();
         Debug.Log("Game Over! Time's up.");
         SceneManager.LoadScene("GameOverScene");
+        FactionManager.ResetInfection();
     }
 
-    private void HandleGameWon()
+    public void HandleGameWon()
     {
         SoundManager.instance.PlayVictorySound();
         Debug.Log("Congratulations! You've won the game!");
         SceneManager.LoadScene("VictoryScene");
+        FactionManager.ResetInfection();
     }
 
 }   

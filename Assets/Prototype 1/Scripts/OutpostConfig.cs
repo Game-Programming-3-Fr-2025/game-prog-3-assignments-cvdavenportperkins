@@ -4,7 +4,7 @@ using UnityEngine;
 public class OutpostConfig 
 {
     public int occupantCount;
-    public OutpostController.FactionType faction;
+    public FactionType faction;
     public float colliderRadius;
     public ShapeType shape;
     public Color color;
@@ -16,7 +16,7 @@ public class OutpostConfig
     public int maxOccupants;
     public int minOccupants;
 
-    public OutpostConfig(int occupantCount, OutpostController.FactionType faction, float colliderRadius, ShapeType shape, Color color)
+    public OutpostConfig(int occupantCount, FactionType faction, float colliderRadius, ShapeType shape, Color color)
     {
         this.occupantCount = occupantCount;
         this.faction = faction;

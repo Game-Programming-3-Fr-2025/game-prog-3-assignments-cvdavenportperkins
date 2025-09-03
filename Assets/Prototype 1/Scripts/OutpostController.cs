@@ -5,20 +5,16 @@ using UnityEngine.Rendering.Universal;
 
 public class OutpostController : MonoBehaviour
 {
-    public enum FactionType { Yellow, Cyan, Magenta }
+    [SerializeField] private GameObject dishargeEffectPrefab;
+    [SerializeField] private float dischargeDamage = 1f;
+
+    public FactionManager faction;
     private bool nodeCaptured = false;
     private GameObject shapeBounds;
 
     [SerializeField] private CircleCollider2D challengeCollider;
 
     List<OccupantController> occupants = new List<OccupantController>();
-
-    public static Dictionary<FactionType, Color> factionColors = new Dictionary<FactionType, Color>
-    {
-        { FactionType.Yellow, Color.yellow },
-        { FactionType.Cyan, Color.cyan },
-        { FactionType.Magenta, Color.magenta }
-    };
 
     public void SpawnOutpost(FactionType faction, Vector3 location, int levelIndex, OutpostConfig config)
     {
@@ -38,8 +34,8 @@ public class OutpostController : MonoBehaviour
             occupantController.infectionChance2 = 0.50f;
             occupantController.animator = occupant.GetComponent<Animator>();
             occupantController.faction = faction; // Assign faction
-            occupantController.currentColor = OutpostController.factionColors[faction]; // Set faction color
-            occupant.GetComponent<Renderer>().material.color = OutpostController.factionColors[faction]; // Apply faction color
+            occupantController.currentColor = FactionManager.GetColor(faction); // Set faction color
+            occupant.GetComponent<Renderer>().material.color = FactionManager.GetColor(faction); // Apply faction color
             occupants.Add(occupantController);
         }
     }
@@ -179,5 +175,24 @@ public class OutpostController : MonoBehaviour
         }
 
 
+    }
+
+    public void TriggerDischarge(Vector3 targetPosition)
+    {
+        // Instantiate discharge effect
+        if (dishargeEffectPrefab != null)
+        {
+            Instantiate(dishargeEffectPrefab, targetPosition, Quaternion.identity);
+        }
+
+        // Apply damage to Player prefab in radius
+        Collider2D hit = Physics2D.OverlapCircle(targetPosition, 0.5f, LayerMask.GetMask("Player"));
+        if (hit != null && hit.TryGetComponent<PlayerHealth>(out var health))
+        {
+            health.TakeDamage(dischargeDamage);
+        }
+        
+            
+        
     }
 }
