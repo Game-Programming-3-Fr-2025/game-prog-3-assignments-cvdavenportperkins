@@ -7,6 +7,7 @@ public class OutpostController : MonoBehaviour
 {
     [SerializeField] private GameObject dischargeEffectPrefab;
     [SerializeField] private float dischargeDamage = 1f;
+    [SerializeField] private Transform visualsRoot;
 
     public FactionType faction;
     private bool nodeCaptured = false;
@@ -18,6 +19,100 @@ public class OutpostController : MonoBehaviour
 
     private readonly List<OccupantController> occupants = new();
 
+    public void ApplyFactionVisuals(ShapeType shape, Color color)
+    {
+        var visualController = GetComponentInChildren<ShapeVisualController>();
+        if (visualController != null)
+        {
+            visualController.SetShape(shape);
+            visualController.SetColor(color);
+        }
+    }
+    public void Initialize(OutpostConfig config)
+    {
+        faction = config.faction;
+
+        SetupCollider(config);
+        ApplyFactionVisuals(config.shape, config.color);
+        SpawnOutpost(config.faction, transform.position, config.levelIndex, config);
+    }
+ 
+    private void CreateShapeBounds()
+    {
+        shapeBounds = new GameObject("ShapeBounds");
+        shapeBounds.transform.SetParent(transform);
+        shapeBounds.transform.localPosition = Vector3.zero;
+    }
+
+    private void SetupCollider(OutpostConfig config)
+    {
+        CreateShapeBounds();
+
+        // Challenge radius on root
+        challengeCollider = GetComponent<CircleCollider2D>() ?? gameObject.AddComponent<CircleCollider2D>();
+        challengeCollider.isTrigger = true;
+        challengeCollider.radius = config.inputChallengeRadius;
+
+        float radius = config.colliderRadius;
+
+        switch (config.shape)
+        {
+            case ShapeType.Circle:
+                boundsCollider = CreateCircleCollider(shapeBounds, radius);
+                break;
+
+            case ShapeType.Square:
+                boundsCollider = CreatePolygonCollider(shapeBounds, GetSquarePoints(radius));
+                break;
+
+            case ShapeType.Triangle:
+                boundsCollider = CreatePolygonCollider(shapeBounds, GetTrianglePoints(radius));
+                break;
+        }
+
+        // Scale visuals to match collider
+        float diameter = radius * 2f;
+        visualsRoot.localScale = new Vector3(diameter, diameter, 1f);
+    }
+
+    private CircleCollider2D CreateCircleCollider(GameObject parent, float radius)
+    {
+        var circle = parent.AddComponent<CircleCollider2D>();
+        circle.radius = radius;
+        circle.isTrigger = false;
+        return circle;
+    }
+
+    private PolygonCollider2D CreatePolygonCollider(GameObject parent, Vector2[] points)
+    {
+        var poly = parent.AddComponent<PolygonCollider2D>();
+        poly.points = points;
+        poly.isTrigger = false;
+        return poly;
+    }
+
+    private Vector2[] GetSquarePoints(float radius)
+    {
+        return new Vector2[]
+        {
+            new Vector2(-radius, -radius),
+            new Vector2(radius, -radius),
+            new Vector2(radius, radius),
+            new Vector2(-radius, radius)
+        };
+    }
+
+    private Vector2[] GetTrianglePoints(float radius)
+    {
+        float height = Mathf.Sqrt(3f) * radius;
+        return new Vector2[]
+        {
+            new Vector2(-radius, -height / 3f),
+            new Vector2(radius, -height / 3f),
+            new Vector2(0f, 2f * height / 3f)
+        };
+    }
+   
     public void SpawnOutpost(FactionType factionType, Vector3 location, int levelIndex, OutpostConfig config)
     {
         int occupantCount = Mathf.Clamp(config.occupantCount, config.minOccupants, config.maxOccupants);
@@ -80,7 +175,7 @@ public class OutpostController : MonoBehaviour
             {
                 nodeCaptured = true;
                 UpdateNodeUI();
-                if (GameManager.Instance != null) GameManager.Instance.OnOutpostCaptured();
+                GameManager.Instance?.OnOutpostCaptured();
                 Debug.Log("Outpost Captured!");
             }
         }
@@ -106,94 +201,24 @@ public class OutpostController : MonoBehaviour
             if (occupant == null) continue;
             var sr = occupant.GetComponent<SpriteRenderer>();
             if (sr != null) sr.color = Color.red;
-            if (occupant.animator != null) occupant.animator.SetTrigger("Captured");
+            occupant.animator?.SetTrigger("Captured");
         }
     }
+   
 
-    private void CreateShapeBounds()
-    {
-        shapeBounds = new GameObject("ShapeBounds");
-        shapeBounds.transform.SetParent(transform);
-        shapeBounds.transform.localPosition = Vector3.zero;
-    }
-
-    private void SetupCollider(OutpostConfig config)
-    {
-        CreateShapeBounds();
-
-        // Interaction (challenge) radius on the outpost root
-        challengeCollider = GetComponent<CircleCollider2D>();
-        if (challengeCollider == null) challengeCollider = gameObject.AddComponent<CircleCollider2D>();
-        challengeCollider.isTrigger = true;
-        challengeCollider.radius = config.inputChallengeRadius;
-
-        float radius = config.colliderRadius;
-        ShapeType shape = config.shape;
-
-        switch (shape)
-        {
-            case ShapeType.Circle:
-                {
-                    var circle = shapeBounds.AddComponent<CircleCollider2D>();
-                    circle.radius = radius;
-                    circle.isTrigger = false;
-                    boundsCollider = circle;
-                    break;
-                }
-            case ShapeType.Square:
-                {
-                    var box = shapeBounds.AddComponent<BoxCollider2D>();
-                    box.size = new Vector2(radius * 2f, radius * 2f);
-                    box.isTrigger = false;
-                    boundsCollider = box;
-                    break;
-                }
-            case ShapeType.Triangle:
-                {
-                    var poly = shapeBounds.AddComponent<PolygonCollider2D>();
-                    float height = Mathf.Sqrt(3f) * radius;
-                    Vector2[] points = new Vector2[3];
-                    points[0] = new Vector2(-radius, -height / 3f);
-                    points[1] = new Vector2(radius, -height / 3f);
-                    points[2] = new Vector2(0f, 2f * height / 3f);
-                    poly.points = points;
-                    poly.isTrigger = false;
-                    boundsCollider = poly;
-                    break;
-                }
-        }
-    }
-
-    public void Initialize(OutpostConfig config)
-    {
-        faction = config.faction;
-        SetupCollider(config);
-        ApplyFactionVisuals(config.shape, config.color);
-        SpawnOutpost(config.faction, transform.position, config.levelIndex, config);
-    }
-
-    public void ApplyFactionVisuals(ShapeType shape, Color color)
-    {
-        var visualController = GetComponentInChildren<ShapeVisualController>();
-        if (visualController != null)
-        {
-            visualController.SetShape(shape);
-            visualController.SetColor(color);
-        }
-    }
-
+    
     private void Update()
     {
-        // Keep occupants within bounds (soft correction)
         if (boundsCollider == null) return;
-        for (int i = 0; i < occupants.Count; i++)
+        foreach (var occ in occupants)
         {
-            var occ = occupants[i];
             if (occ == null) continue;
             occ.EnforceBounds(boundsCollider);
         }
     }
+  
 
+  
     public void TriggerDischarge(Vector3 targetPosition)
     {
         if (dischargeEffectPrefab != null)
@@ -207,4 +232,5 @@ public class OutpostController : MonoBehaviour
             health.TakeDamage(dischargeDamage);
         }
     }
+   
 }

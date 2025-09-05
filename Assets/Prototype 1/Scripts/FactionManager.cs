@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.AppUI.UI;
 using UnityEngine;
 
 public class FactionManager : MonoBehaviour
@@ -35,14 +36,16 @@ public class FactionManager : MonoBehaviour
     {
         { FactionType.Yellow, Color.yellow },
         { FactionType.Cyan, Color.cyan },
-        { FactionType.Magenta, Color.magenta }
+        { FactionType.Magenta, Color.magenta },
+        { FactionType.Grey, Color.grey }
     };
 
     public static readonly Dictionary<FactionType, ShapeType> factionShapes = new()
     {
         { FactionType.Yellow, ShapeType.Triangle },
         { FactionType.Cyan, ShapeType.Circle },
-        { FactionType.Magenta, ShapeType.Square }
+        { FactionType.Magenta, ShapeType.Square },
+        { FactionType.Grey, ShapeType.Capsule }
     };
 
     public static Color GetColor(FactionType faction)

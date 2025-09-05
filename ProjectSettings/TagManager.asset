@@ -8,11 +8,12 @@ TagManager:
   - Faction_Yellow
   - Faction_Cyan
   - Faction_Magenta
+  - Infected
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - Faction_Yellow
@@ -44,6 +45,15 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Outposts
+    uniqueID: 1946819769
+    locked: 0
+  - name: Occupants
+    uniqueID: 1328320577
+    locked: 0
+  - name: Player
+    uniqueID: 2299823403
     locked: 0
   m_RenderingLayers:
   - Default
