@@ -38,4 +38,4 @@ public class PlayerHealth : MonoBehaviour
         GameManager.Instance.HandleGameOver();
         Debug.Log("Player has died.");
     }
-}
+} 
