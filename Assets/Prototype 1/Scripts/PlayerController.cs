@@ -1,44 +1,49 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
-public class PlayerController : MonoBehaviour
+namespace PrototypeOne
 {
-    public FactionType faction;
-    public float moveSpeed = 5f;
-
-    private Rigidbody2D rb;
-    private Vector2 moveInput;
-
-    private ShapeVisualController visualController;
-    private SpriteRenderer sr;
-
-    void Awake()
+    public class PlayerController : MonoBehaviour
     {
-        rb = GetComponent<Rigidbody2D>();
-        visualController = GetComponentInChildren<ShapeVisualController>();
-        sr = GetComponent<SpriteRenderer>();
-    }
+        public float moveSpeed = 5f;
 
-    void Update()
-    {
-        moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        if (moveInput.sqrMagnitude > 1f) moveInput.Normalize();
-    }
+        private Rigidbody2D rb;
+        private Vector2 moveInput;
 
-    void FixedUpdate()
-    {
-        rb.linearVelocity = moveInput * moveSpeed;
-    }
+        private ShapeVisualController visualController;
+        private SpriteRenderer sr;
 
-    public void UpdateVisuals()
-    {
-        if (visualController != null)
+        public FactionType faction;
+
+        void Awake()
         {
-            visualController.SetFactionVisual(faction);
+            rb = GetComponent<Rigidbody2D>();
+            visualController = GetComponentInChildren<ShapeVisualController>();
+            sr = GetComponent<SpriteRenderer>();
         }
-        else if (sr != null)
+
+        void Update()
         {
-            sr.color = FactionManager.GetColor(faction);
+            moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            if (moveInput.sqrMagnitude > 1f) moveInput.Normalize();
+        }
+
+        void FixedUpdate()
+        {
+            rb.linearVelocity = moveInput * moveSpeed;
+        }
+
+        public void UpdateVisuals()
+        {
+            if (visualController != null)
+            {
+                visualController.SetFactionVisual(faction);
+            }
+            else if (sr != null)
+            {
+                sr.color = FactionManager.GetColor(faction);
+            }
+
         }
     }
 }
+
