@@ -1,7 +1,13 @@
-public enum FactionType
+using UnityEngine;
+
+namespace PrototypeOne
 {
-    Yellow,
-    Cyan,
-    Magenta,
-    Grey,
+
+    public enum FactionType
+    {
+        Yellow,
+        Cyan,
+        Magenta,
+        Grey,
+    }
 }

@@ -1,41 +1,45 @@
 using UnityEngine;
 
-public class PlayerHealth : MonoBehaviour
+namespace PrototypeOne
 {
-    public float currentHealth = 3f;
-    public GameObject damageEffectPrefab;
-    public AudioClip damageSound;
-    private AudioSource audioSource;
 
-    private void Start()
+    public class PlayerHealth : MonoBehaviour
     {
-        audioSource = GetComponent<AudioSource>();
-    }
+        public float currentHealth = 3f;
+        public GameObject damageEffectPrefab;
+        public AudioClip damageSound;
+        private AudioSource audioSource;
 
-    public void TakeDamage(float damageAmount)
-    {
-        if (damageEffectPrefab != null)
+        private void Start()
         {
-            Instantiate(damageEffectPrefab, transform.position, Quaternion.identity);
+            audioSource = GetComponent<AudioSource>();
         }
 
-        if (audioSource != null && damageSound != null)
+        public void TakeDamage(float damageAmount)
         {
-            audioSource.PlayOneShot(damageSound);
+            if (damageEffectPrefab != null)
+            {
+                Instantiate(damageEffectPrefab, transform.position, Quaternion.identity);
+            }
+
+            if (audioSource != null && damageSound != null)
+            {
+                audioSource.PlayOneShot(damageSound);
+            }
+
+            currentHealth -= damageAmount;
+            if (currentHealth <= 0)
+            {
+                Die();
+            }
         }
 
-        currentHealth -= damageAmount;
-        if (currentHealth <= 0)
+        public void Die()
         {
-            Die();
+            if (GameManager.Instance == null) return;
+            GameManager.Instance.isGameOver = true;
+            GameManager.Instance.HandleGameOver();
+            Debug.Log("Player has died.");
         }
     }
-
-    public void Die()
-    {
-        if (GameManager.Instance == null) return;
-        GameManager.Instance.isGameOver = true;
-        GameManager.Instance.HandleGameOver();
-        Debug.Log("Player has died.");
-    }
-} 
+}

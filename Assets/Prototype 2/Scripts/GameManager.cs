@@ -1,13 +1,14 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro;
 
-namespace PrototypeOne
+namespace PrototypeTwo
 {
 
-    public class GameManager : MonoBehaviour
+    public class PrototyeTwoGameManager : MonoBehaviour
     {
-        public static GameManager Instance;
+        public PrototyeTwoGameManager Instance;
+        public SoundManager SoundManager;
 
         [Header("Game State")]
         public bool isGameOver = false;
@@ -18,10 +19,6 @@ namespace PrototypeOne
         public int score = 0;
         public float gameTime = 300f; // Total game time in seconds
         public float timeRemaining;
-
-        [Header("Objectives")]
-        public int outpostsRemaining;
-        public int totalOutposts;
 
         [Header("UI References")]
         public TextMeshProUGUI scoreText;
@@ -65,25 +62,6 @@ namespace PrototypeOne
                 HandleGameOver();
             }
         }
-
-        // --- Objective Tracking ---
-        public void RegisterOutpost()
-        {
-            totalOutposts++;
-            outpostsRemaining++;
-        }
-
-        public void OnOutpostCaptured()
-        {
-            outpostsRemaining = Mathf.Max(0, outpostsRemaining - 1);
-            if (outpostsRemaining <= 0 && !isGameWon)
-            {
-                isGameWon = true;
-                HandleGameWon();
-            }
-        }
-
-        // --- Score Handling ---
         public void AddScore(int points)
         {
             score += points;
@@ -100,26 +78,16 @@ namespace PrototypeOne
             if (timerText) timerText.text = $"Time: {Mathf.Max(0, timeRemaining):F2}";
         }
 
-        // --- Access Feedback ---
-        public void GrantAccess()
-        {
-            SoundManager.instance?.PlayAccessGrantedSound(Camera.main.transform.position);
-        }
 
-        public void DenyAccess()
-        {
-            SoundManager.instance?.PlayAccessDeniedSound(Camera.main.transform.position);
-        }
-
-        // --- Game End States ---
         public void HandleGameOver()
         {
             SoundManager.instance?.PlayGameOverSound();
             Debug.Log("Game Over! Time's up.");
             if (gameOverText) gameOverText.gameObject.SetActive(true);
             SceneManager.LoadScene("GameOverScene");
-            FactionManager.ResetInfection();
+           
         }
+
 
         public void HandleGameWon()
         {
@@ -127,7 +95,7 @@ namespace PrototypeOne
             Debug.Log("Congratulations! You've won the game!");
             if (youWinText) youWinText.gameObject.SetActive(true);
             SceneManager.LoadScene("VictoryScene");
-            FactionManager.ResetInfection();
+            
         }
 
         // --- Pause/Resume ---
@@ -144,7 +112,7 @@ namespace PrototypeOne
             timeRemaining = gameTime;
             isGameOver = false;
             isGameWon = false;
-            outpostsRemaining = totalOutposts;
+
 
             UpdateScoreText();
             UpdateTimerText();

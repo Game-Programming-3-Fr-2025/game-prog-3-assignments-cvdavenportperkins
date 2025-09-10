@@ -1,9 +1,13 @@
 using UnityEngine;
 
-public enum ShapeType
+namespace PrototypeOne
 {
-    Circle,
-    Square,
-    Triangle,
-    Capsule
+
+    public enum ShapeType
+    {
+        Circle,
+        Square,
+        Triangle,
+        Capsule
+    }
 }
