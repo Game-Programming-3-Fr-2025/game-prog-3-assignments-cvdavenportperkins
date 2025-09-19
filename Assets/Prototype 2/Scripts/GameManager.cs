@@ -16,9 +16,12 @@ namespace PrototypeTwo
         public bool isPaused = false;
 
         [Header("Score & Time")]
+        public bool useTimer = false;    
         public int score = 0;
         public float gameTime = 300f; // Total game time in seconds
         public float timeRemaining;
+        public Transform player;
+        private float startY;
 
         [Header("UI References")]
         public TextMeshProUGUI scoreText;
@@ -46,21 +49,40 @@ namespace PrototypeTwo
             UpdateTimerText();
             if (gameOverText) gameOverText.gameObject.SetActive(false);
             if (youWinText) youWinText.gameObject.SetActive(false);
+            
+            if (player != null)
+                startY = player.position.y;
         }
 
         void Update()
         {
             if (isGameOver || isGameWon || isPaused) return;
 
-            timeRemaining -= Time.deltaTime;
-            UpdateTimerText();
-
-            if (timeRemaining <= 0)
+            if (useTimer)
             {
-                timeRemaining = 0;
-                isGameOver = true;
-                HandleGameOver();
+                timeRemaining -= Time.deltaTime;
+                UpdateTimerText();
+
+                if (timeRemaining <= 0)
+                {
+                    timeRemaining = 0;
+                    isGameOver = true;
+                    HandleGameOver();
+                }
             }
+            else
+            {
+                if (player != null)
+                {
+                    int distance = Mathf.FloorToInt(startY - player.position.y);
+                    if (distance != score)
+                    {
+                        score = distance;
+                        UpdateScoreText();
+                    }
+                }
+            }
+        
         }
         public void AddScore(int points)
         {
@@ -78,6 +100,14 @@ namespace PrototypeTwo
             if (timerText) timerText.text = $"Time: {Mathf.Max(0, timeRemaining):F2}";
         }
 
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (other.CompareTag("Player"))
+            {
+                isGameOver = true;
+                HandleGameOver();
+            }
+        }
 
         public void HandleGameOver()
         {

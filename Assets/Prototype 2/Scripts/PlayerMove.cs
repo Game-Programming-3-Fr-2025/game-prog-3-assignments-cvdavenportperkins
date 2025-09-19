@@ -5,9 +5,11 @@ namespace PrototypeTwo
 
     public class PlayerMove : MonoBehaviour
     {
-        private Vector2 moveInput;
+        private float moveInputX;
         private Rigidbody2D rb;
-        public float moveSpeed = 5f;
+        public float moveSpeed = 6f;
+        public float fallSpeed = 5f;
+        //public float wallLimit = 6f;
         private SpriteRenderer sr;
 
         private void Awake()
@@ -25,13 +27,18 @@ namespace PrototypeTwo
         // Update is called once per frame
         void Update()
         {
-            moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            if (moveInput.sqrMagnitude > 1f) moveInput.Normalize();
+            moveInputX = Input.GetAxisRaw("Horizontal");
+
+            if (sr != null && moveInputX != 0)
+                sr.flipX = moveInputX < 0;
         }
 
         private void FixedUpdate()
         {
-            rb.linearVelocity = moveInput * moveSpeed;
+            rb.linearVelocity = new Vector2(moveInputX * moveSpeed, -fallSpeed);
+
+            //float clampedX = Mathf.Clamp(transform.position.x, -wallLimit, wallLimit);
+            //transform.position = new Vector3(clampedX, transform.position.y, transform.position.z);
         }
     }
 

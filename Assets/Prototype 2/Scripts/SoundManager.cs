@@ -6,14 +6,13 @@ namespace PrototypeTwo
 
     public class SoundManager : MonoBehaviour
     {
-        public SoundManager instance;
-        public AudioSource audioSource;
+        public static SoundManager instance;
+        public AudioSource sfxSource;
+        public AudioSource bgmSource;
 
         public AudioClip gameOverClip;
         public AudioClip victoryClip;
-
         public AudioClip bgmClip;
-        private AudioSource bgmSource;
 
         public float defaultVolume = 1f;
 
@@ -26,7 +25,18 @@ namespace PrototypeTwo
             }
             instance = this;
             DontDestroyOnLoad(gameObject);
-            audioSource = GetComponent<AudioSource>();
+
+            if (sfxSource == null)
+            {
+                sfxSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            if (bgmSource == null)
+            {
+                bgmSource = gameObject.AddComponent<AudioSource>();
+                bgmSource.loop = true;
+            }
+
             Debug.Log("SoundManager initialized.");
         }
         // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -56,8 +66,25 @@ namespace PrototypeTwo
 
         public void PlayBGM()
         {
-            if (bgmSource.isPlaying) return;
-            bgmSource.Play();
+            if (bgmClip == null)
+            {
+                Debug.LogWarning("No BGM Clip Asigned.");
+                return;
+            }
+
+            if (!bgmSource.isPlaying) return;
+            {
+                bgmSource.clip = bgmClip;
+                bgmSource.volume = defaultVolume;
+                bgmSource.Play();
+            }
+        }
+
+
+        public void StopBGM()
+        {
+            if (bgmSource.isPlaying)
+                bgmSource.Stop();
         }
     }
 }

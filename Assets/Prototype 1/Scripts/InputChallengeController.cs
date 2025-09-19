@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PrototypeOne
 {
@@ -9,12 +10,18 @@ namespace PrototypeOne
     public class InputChallengeController : MonoBehaviour
     {
         [SerializeField] private ShapeVisualController visualController;
+        [SerializeField] public GameObject promptPrefab;
+        [SerializeField] public Transform promptContainer;
+
+        [SerializeField] private Sprite[] directionalSprites;
+        [SerializeField] private Sprite[] numberSprites;
+
         [SerializeField] private float challengeDuration = 3.5f;
 
         private PlayerController currentPlayer;
         private OutpostController currentOutpost;
-
         private ShapeType expectedShape;
+
         private float timer;
         private bool challengeActive;
 
@@ -26,22 +33,6 @@ namespace PrototypeOne
         private readonly List<string> promptSequence = new();
         private readonly List<GameObject> promptUIElements = new();
         private int currentInputIndex = 0;
-
-        public GameObject promptPrefab;
-        public GameObject promptContainer;
-
-        public void DisplayPromptSequence()
-        {
-            if (promptPrefab == null || promptContainer == null) return;
-
-            foreach (string prompt in promptSequence)
-            {
-                var promptUI = Instantiate(promptPrefab, promptContainer.transform);
-                var label = promptUI.GetComponent<TMP_Text>();
-                if (label != null) label.text = prompt;
-                promptUIElements.Add(promptUI);
-            }
-        }
 
         public void SubmitPromptInput(string input)
         {
@@ -88,6 +79,36 @@ namespace PrototypeOne
             }
         }
 
+        public void DisplayPromptSequence()
+        {
+            if (promptPrefab == null || promptContainer == null) return;
+
+            foreach (var ui in promptUIElements)
+            {
+                if (ui != null) Destroy(ui);
+
+            }
+            promptUIElements.Clear();
+
+            foreach (string prompt in promptSequence)
+            {
+                var promptUI = Instantiate(promptPrefab, promptContainer);
+                var icon = promptUI.GetComponent<Image>();
+
+
+                if (icon != null)
+                {
+                    if (IsDirection(prompt))
+                        icon.sprite = GetDirectionalSprite(prompt);
+                    else
+                        icon.sprite = GetNumberSprite(prompt);
+                }
+
+                promptUIElements.Add(promptUI);
+
+            }
+        }
+
         public void StartChallenge(FactionType faction, PlayerController player, OutpostController outpost)
         {
             currentPlayer = player;
@@ -121,13 +142,7 @@ namespace PrototypeOne
             }
         }
 
-        public void SubmitInput(ShapeType inputShape)
-        {
-            if (!challengeActive) return;
-            if (inputShape == expectedShape) ChallengeSucceeded();
-            else ChallengeFailed();
-        }
-
+        
         private void ChallengeSucceeded()
         {
             challengeActive = false;
@@ -139,6 +154,7 @@ namespace PrototypeOne
             if (currentOutpost != null)
             {
                 currentOutpost.AccessGranted();
+                GameManager.Instance.AddScore(200);
             }
 
             if (currentPlayer != null)
@@ -155,6 +171,29 @@ namespace PrototypeOne
             OnChallengeFailure?.Invoke();
 
             if (GameManager.Instance != null) GameManager.Instance.DenyAccess();
+        }
+
+        private bool IsDirection(string prompt)
+        {
+            return prompt == "Up" || prompt == "Down" || prompt == "Left" || prompt == "Right";
+        }
+
+        private Sprite GetDirectionalSprite(string direction)
+        {
+            return direction switch
+            {
+                "Up" => directionalSprites[0],
+                "Down" => directionalSprites[1],
+                "Left" => directionalSprites[2],
+                "Right" => directionalSprites[3],
+                _ => null
+            };
+        }
+
+        private Sprite GetNumberSprite(string number)
+        {
+            int index = int.Parse(number) - 1;
+            return numberSprites[index];
         }
     }
 }

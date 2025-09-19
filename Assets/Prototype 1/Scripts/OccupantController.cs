@@ -168,5 +168,12 @@ namespace PrototypeOne
             }
             return nearest;
         }
+
+        private void LateUpdate()
+        {
+            if (GameManager.Instance != null) 
+                transform.position = GameManager.Instance.ClampToWorldBounds(transform.position, 0.2f);
+              
+        }
     }
 }

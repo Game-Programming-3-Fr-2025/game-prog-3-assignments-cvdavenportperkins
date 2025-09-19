@@ -165,6 +165,7 @@ namespace PrototypeOne
                     {
                         occupant.Infect();
                         occupant.FlashTick(Color.red);
+                        GameManager.Instance.AddScore(25);
                     }
                     else
                     {
@@ -180,6 +181,7 @@ namespace PrototypeOne
                     UpdateNodeUI();
                     GameManager.Instance?.OnOutpostCaptured();
                     Debug.Log("Outpost Captured!");
+                    GameManager.Instance.AddScore(500);
                 }
             }
         }
@@ -206,6 +208,7 @@ namespace PrototypeOne
                 if (sr != null) sr.color = Color.red;
                 occupant.animator?.SetTrigger("Captured");
             }
+
         }
 
 

@@ -46,14 +46,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Outposts
+  - name: Outposts/Environment
     uniqueID: 1946819769
     locked: 0
-  - name: Occupants
+  - name: Occupants/Obstacles
     uniqueID: 1328320577
     locked: 0
   - name: Player
     uniqueID: 2299823403
+    locked: 0
+  - name: Effects
+    uniqueID: 1832975587
     locked: 0
   m_RenderingLayers:
   - Default

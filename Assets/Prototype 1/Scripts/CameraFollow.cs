@@ -12,7 +12,7 @@ namespace PrototypeOne
 
         private void LateUpdate()
         {
-            if (target != null) return;
+            if (target == null) return;
 
             Vector3 desiredPosition = new Vector3(target.position.x + offset.x, target.position.y + offset.y, offset.z);
 
@@ -22,7 +22,7 @@ namespace PrototypeOne
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
-
+            target = GameObject.FindWithTag("Player").transform;
         }
 
         // Update is called once per frame

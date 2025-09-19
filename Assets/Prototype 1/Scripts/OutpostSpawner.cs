@@ -6,10 +6,11 @@ namespace PrototypeOne
 
     public class OutpostSpawner : MonoBehaviour
     {
+        [SerializeField] private GameObject outpostPrefab;
+        [SerializeField] private OutpostConfig outpostConfig;   
         [SerializeField] private float playerColliderRadius = 1.5f;
 
         [Header("Spawner Settings")]
-        public GameObject outpostPrefab;
         public int totalOutposts = 12;
         public float spawnBuffer;
 
@@ -96,6 +97,23 @@ namespace PrototypeOne
             float x = Random.Range(-10f, 10f);
             float y = Random.Range(-10f, 10f);
             return new Vector3(x, y, 0f);
+        }
+
+        void SpawnOutpost(Vector3 position)
+        {
+            GameObject outpostGO = Instantiate(outpostPrefab, position, Quaternion.identity);
+            OutpostController controller = outpostGO.GetComponent<OutpostController>();
+            if (controller != null)
+            {
+                controller.Initialize(outpostConfig);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (GameManager.Instance != null)
+                transform.position = GameManager.Instance.ClampToWorldBounds(transform.position, 0.2f);
+
         }
     }
 }

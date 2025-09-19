@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 namespace PrototypeOne
@@ -14,6 +15,10 @@ namespace PrototypeOne
         public bool isGameWon = false;
         public bool isPaused = false;
 
+        [Header("World Bounds")]
+        [SerializeField] private PolygonCollider2D baseLevelCollider;
+        private Bounds worldBounds;
+        
         [Header("Score & Time")]
         public int score = 0;
         public float gameTime = 300f; // Total game time in seconds
@@ -29,6 +34,13 @@ namespace PrototypeOne
         public TextMeshProUGUI gameOverText;
         public TextMeshProUGUI youWinText;
 
+        public Image HealthImage1;
+        public Image HealthImage2;
+        public Image HealthImage3;
+
+        public int currentHealth = 3;
+
+
         void Awake()
         {
             if (Instance != null && Instance != this)
@@ -41,8 +53,20 @@ namespace PrototypeOne
             DontDestroyOnLoad(gameObject);
 
             timeRemaining = gameTime;
+            if (baseLevelCollider != null)
+            {
+                worldBounds = baseLevelCollider.bounds;
+            }
         }
 
+        public Vector3 ClampToWorldBounds(Vector3 position, float padding = 0f)
+        {
+            return new Vector3(
+                Mathf.Clamp(position.x, worldBounds.min.x, worldBounds.max.x - padding),
+                Mathf.Clamp(position.y, worldBounds.min.y, worldBounds.max.y - padding),
+                position.z
+            );
+        }
         void Start()
         {
             UpdateScoreText();
@@ -64,6 +88,15 @@ namespace PrototypeOne
                 isGameOver = true;
                 HandleGameOver();
             }
+        }
+
+        // --- Health Handling ---
+
+        public void UpdateHealthUI(int currenthealth)
+        {
+            HealthImage1.color = currenthealth >= 1 ? Color.white : Color.red;
+            HealthImage1.color = currenthealth >= 2 ? Color.white : Color.red;
+            HealthImage1.color = currenthealth >= 3 ? Color.white : Color.red;
         }
 
         // --- Objective Tracking ---
