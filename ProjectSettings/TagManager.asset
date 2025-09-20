@@ -9,6 +9,7 @@ TagManager:
   - Faction_Cyan
   - Faction_Magenta
   - Infected
+  - Outpost
   layers:
   - Default
   - TransparentFX
@@ -16,9 +17,9 @@ TagManager:
   - Player
   - Water
   - UI
-  - Faction_Yellow
-  - Faction_Cyan
-  - Faction_Magenta
+  - Outpost
+  - Occupant
+  - 
   - 
   - 
   - 

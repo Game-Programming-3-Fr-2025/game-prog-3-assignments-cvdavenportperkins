@@ -8,9 +8,7 @@ namespace PrototypeOne
 
     public class OutpostController : MonoBehaviour
     {
-        [SerializeField] private GameObject dischargeEffectPrefab;
-        [SerializeField] private float dischargeDamage = 1f;
-        [SerializeField] private Transform visualsRoot;
+        [SerializeField] private GameObject dischargeEffectPrefab; [SerializeField] private float dischargeDamage = 1f; [SerializeField] private Transform visualsRoot; [SerializeField] private Light2D light2D;
 
         public FactionType faction;
         private bool nodeCaptured = false;
@@ -35,6 +33,16 @@ namespace PrototypeOne
         {
             faction = config.faction;
 
+            if (light2D != null)
+            {
+                light2D.color = config.color;
+            }
+
+            if (light2D == null)
+            {
+                light2D = GetComponentInChildren<Light2D>();
+            }
+
             SetupCollider(config);
             ApplyFactionVisuals(config.shape, config.color);
             SpawnOutpost(config.faction, transform.position, config.levelIndex, config);
@@ -51,8 +59,21 @@ namespace PrototypeOne
         {
             CreateShapeBounds();
 
-            // Challenge radius on root
-            challengeCollider = GetComponent<CircleCollider2D>() ?? gameObject.AddComponent<CircleCollider2D>();
+            // Challenge radius on child object
+            Transform challengeTransform = transform.Find("ChallengeCollider");
+            if (challengeTransform == null)
+            {
+                Debug.LogError("ChallengeCollider child not found.");
+                return;
+            }
+
+            challengeCollider = challengeTransform.GetComponent<CircleCollider2D>();
+            if (challengeCollider == null)
+            {
+                Debug.LogError("CircleCollider2D missing on ChallengeCollider.");
+                return;
+            }
+
             challengeCollider.isTrigger = true;
             challengeCollider.radius = config.inputChallengeRadius;
 
@@ -98,10 +119,10 @@ namespace PrototypeOne
         {
             return new Vector2[]
             {
-            new Vector2(-radius, -radius),
-            new Vector2(radius, -radius),
-            new Vector2(radius, radius),
-            new Vector2(-radius, radius)
+    new Vector2(-radius, -radius),
+    new Vector2(radius, -radius),
+    new Vector2(radius, radius),
+    new Vector2(-radius, radius)
             };
         }
 
@@ -110,9 +131,9 @@ namespace PrototypeOne
             float height = Mathf.Sqrt(3f) * radius;
             return new Vector2[]
             {
-            new Vector2(-radius, -height / 3f),
-            new Vector2(radius, -height / 3f),
-            new Vector2(0f, 2f * height / 3f)
+    new Vector2(-radius, -height / 3f),
+    new Vector2(radius, -height / 3f),
+    new Vector2(0f, 2f * height / 3f)
             };
         }
 
@@ -211,8 +232,6 @@ namespace PrototypeOne
 
         }
 
-
-
         private void Update()
         {
             if (boundsCollider == null) return;
@@ -222,8 +241,6 @@ namespace PrototypeOne
                 occ.EnforceBounds(boundsCollider);
             }
         }
-
-
 
         public void TriggerDischarge(Vector3 targetPosition)
         {
@@ -240,4 +257,5 @@ namespace PrototypeOne
         }
 
     }
+
 }

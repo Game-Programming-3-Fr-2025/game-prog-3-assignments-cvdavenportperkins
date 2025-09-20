@@ -1,40 +1,37 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 namespace PrototypeOne
 {
-
     public class OutpostSpawner : MonoBehaviour
     {
-        [SerializeField] private GameObject outpostPrefab;
-        [SerializeField] private OutpostConfig outpostConfig;   
-        [SerializeField] private float playerColliderRadius = 1.5f;
+        [SerializeField] private GameObject outpostPrefab; [SerializeField] private OutpostConfig outpostConfig; [SerializeField] private float playerColliderRadius = 1.5f;
 
         [Header("Spawner Settings")]
         public int totalOutposts = 12;
         public float spawnBuffer;
+        [SerializeField] private float worldWidth = 20f;
+        [SerializeField] private float worldHeight = 20f;
 
         // Track placed outposts to avoid overlap
         private readonly List<(Vector3 pos, float radius)> placedOutposts = new();
-
 
         private void Awake()
         {
             spawnBuffer = playerColliderRadius;
         }
+
         private void Start()
         {
             for (int i = 0; i < totalOutposts; i++)
             {
                 OutpostConfig config = GenerateConfig();
                 Vector3 spawnPos = GetValidPosition(config.colliderRadius);
-
                 GameObject outpostGO = Instantiate(outpostPrefab, spawnPos, Quaternion.identity);
                 var controller = outpostGO.GetComponent<OutpostController>();
                 controller.Initialize(config);
-
                 placedOutposts.Add((spawnPos, config.colliderRadius));
-
                 GameManager.Instance?.RegisterOutpost();
             }
         }
@@ -94,8 +91,8 @@ namespace PrototypeOne
 
         private Vector3 GetRandomPositionInField()
         {
-            float x = Random.Range(-10f, 10f);
-            float y = Random.Range(-10f, 10f);
+            float x = Random.Range(-worldWidth / 2f, worldWidth / 2f);
+            float y = Random.Range(-worldHeight / 2f, worldHeight / 2f);
             return new Vector3(x, y, 0f);
         }
 
@@ -113,7 +110,7 @@ namespace PrototypeOne
         {
             if (GameManager.Instance != null)
                 transform.position = GameManager.Instance.ClampToWorldBounds(transform.position, 0.2f);
-
         }
     }
-}
+
+}          
