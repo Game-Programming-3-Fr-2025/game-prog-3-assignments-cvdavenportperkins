@@ -5,7 +5,9 @@ namespace PrototypeOne
 
     public class PlayerHealth : MonoBehaviour
     {
+        public float maxHealth = 8f;
         public float currentHealth = 3f;
+        public bool isAlive => currentHealth > 0f;
         public GameObject damageEffectPrefab;
         public AudioClip damageSound;
         private AudioSource audioSource;
@@ -15,6 +17,13 @@ namespace PrototypeOne
             audioSource = GetComponent<AudioSource>();
         }
 
+
+        public void SetHealth(float value)
+        {
+            currentHealth = Mathf.Clamp(value, 0f, maxHealth);
+            GameManager.Instance.currentHealth = currentHealth;
+            GameManager.Instance.UpdateHealthUI(Mathf.FloorToInt(currentHealth));
+        }
         public void TakeDamage(float damageAmount)
         {
             if (damageEffectPrefab != null)

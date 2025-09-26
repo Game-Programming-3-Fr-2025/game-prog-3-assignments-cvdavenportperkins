@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -20,6 +21,9 @@ namespace PrototypeOne
 
         private readonly List<OccupantController> occupants = new();
 
+        public int minOccupants;
+        public int maxOccupants;    
+
         public void ApplyFactionVisuals(ShapeType shape, Color color)
         {
             var visualController = GetComponentInChildren<ShapeVisualController>();
@@ -31,6 +35,13 @@ namespace PrototypeOne
         }
         public void Initialize(OutpostConfig config)
         {
+            if (config.faction == FactionType.Grey)
+            {
+                Debug.LogWarning("Grey faction is player only. Cannot be assigned to outposts");
+                Destroy(gameObject);
+                return;
+            }
+            
             faction = config.faction;
 
             if (light2D != null)
@@ -135,6 +146,41 @@ namespace PrototypeOne
     new Vector2(radius, -height / 3f),
     new Vector2(0f, 2f * height / 3f)
             };
+        }
+
+        private OutpostConfig GenerateConfig()
+        {
+            List<(float radius, int min, int max)> tiers = new()
+            {
+                (1.5f, 3, 5),
+                (2.5f, 6, 8),
+                (3.5f, 8, 10)
+            };
+
+            var tier = tiers[Random.Range(0, tiers.Count)];
+
+            int occupantCount = Random.Range(tier.min, tier.max + 1);
+
+            List<FactionType> validFactions = new()
+            {
+                FactionType.Cyan,
+                FactionType.Magenta,
+                FactionType.Yellow,
+            };
+
+            FactionType faction = validFactions[Random.Range(0, validFactions.Count)];
+            ShapeType shape = FactionManager.GetShape(faction);
+            Color color = FactionManager.GetColor(faction);
+
+            return new OutpostConfig(
+                occupantCount,
+                faction: faction,
+                boundsColliderRadius: tier.radius,
+                shape: shape,
+                color: color,
+                spawnBuffer: tier.radius + 0.5f
+             );
+                
         }
 
         public void SpawnOutpost(FactionType factionType, Vector3 location, int levelIndex, OutpostConfig config)

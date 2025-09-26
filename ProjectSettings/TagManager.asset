@@ -10,6 +10,7 @@ TagManager:
   - Faction_Magenta
   - Infected
   - Outpost
+  - Environment
   layers:
   - Default
   - TransparentFX
@@ -19,7 +20,7 @@ TagManager:
   - UI
   - Outpost
   - Occupant
-  - 
+  - Level_Base
   - 
   - 
   - 

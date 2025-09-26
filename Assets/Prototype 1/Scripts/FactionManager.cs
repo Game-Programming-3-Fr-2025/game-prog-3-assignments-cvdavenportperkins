@@ -7,10 +7,18 @@ namespace PrototypeOne
 
     public class FactionManager : MonoBehaviour
     {
+
+        public FactionType playerFaction = FactionType.Grey;
         public static int totalOccupants = 0;
         public static int infectedCount = 0;
         public static float InfectionRatio => totalOccupants == 0 ? 0f : (float)infectedCount / totalOccupants;
 
+        public void SetPlayerFaction(FactionType faction)
+        {
+            playerFaction = faction;
+            Debug.Log($"PlayerFaction set to {faction} with {GetColor(faction)} and {GetShape(faction)}");
+        }
+        
         public static void RegisterOccupant()
         {
             totalOccupants++;

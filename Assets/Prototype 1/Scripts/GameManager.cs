@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using Unity.AppUI.Core;
 
 namespace PrototypeOne
 {
@@ -9,6 +10,13 @@ namespace PrototypeOne
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance;
+
+        [Header("Generate Level")]
+        [SerializeField] private GameObject playerPrefab;
+        [SerializeField] private GameObject levelPrefab;
+        [SerializeField] private OutpostSpawner outpostSpawner;
+
+
 
         [Header("Game State")]
         public bool isGameOver = false;
@@ -18,10 +26,12 @@ namespace PrototypeOne
         [Header("World Bounds")]
         [SerializeField] private PolygonCollider2D baseLevelCollider;
         private Bounds worldBounds;
+        public Bounds GetWorldBounds() => worldBounds;
         
         [Header("Score & Time")]
         public int score = 0;
-        public float gameTime = 300f; // Total game time in seconds
+        public float gameTime = 180f; // Total game time in seconds
+        public float gameClock = 60f;
         public float timeRemaining;
 
         [Header("Objectives")]
@@ -38,7 +48,7 @@ namespace PrototypeOne
         public Image HealthImage2;
         public Image HealthImage3;
 
-        public int currentHealth = 3;
+        public float currentHealth = 3f;
 
 
         void Awake()
@@ -59,16 +69,12 @@ namespace PrototypeOne
             }
         }
 
-        public Vector3 ClampToWorldBounds(Vector3 position, float padding = 0f)
-        {
-            return new Vector3(
-                Mathf.Clamp(position.x, worldBounds.min.x, worldBounds.max.x - padding),
-                Mathf.Clamp(position.y, worldBounds.min.y, worldBounds.max.y - padding),
-                position.z
-            );
-        }
         void Start()
         {
+            GenerateWorld(tierLevel: OutpostSpawner.currentTier);
+            SpawnPlayer();
+            outpostSpawner.SpawnTier();
+
             UpdateScoreText();
             UpdateTimerText();
             if (gameOverText) gameOverText.gameObject.SetActive(false);
@@ -90,9 +96,40 @@ namespace PrototypeOne
             }
         }
 
+        //---World Generation---
+        public void GenerateWorld(int tierLevel)
+        {
+            float scaleFactor = 1f + (tierLevel * 0.15f);
+            GameObject level = Instantiate(levelPrefab);
+            level.transform.localScale = Vector3.one * scaleFactor;
+
+            PolygonCollider2D collider = level.GetComponent<PolygonCollider2D>();
+            SetWorldBounds(collider.bounds);
+        }
+
+        public void SetWorldBounds(Bounds bounds)
+        {
+            worldBounds = bounds;
+        }
+
+        public void SpawnPlayer()
+        {
+            Vector3 safePos = GameManager.Instance.ClampToWorldBounds(Vector3.zero, 2f);
+            Instantiate(playerPrefab, safePos, Quaternion.identity);
+        }
+
+        public Vector3 ClampToWorldBounds(Vector3 position, float padding = 0f)
+        {
+            return new Vector3(
+                Mathf.Clamp(position.x, worldBounds.min.x + padding, worldBounds.max.x - padding),
+                Mathf.Clamp(position.y, worldBounds.min.y + padding, worldBounds.max.y - padding),
+                position.z
+            );
+        }
+
         // --- Health Handling ---
 
-        public void UpdateHealthUI(int currenthealth)
+        public void UpdateHealthUI(float currenthealth)
         {
             HealthImage1.color = currenthealth >= 1 ? Color.white : Color.red;
             HealthImage1.color = currenthealth >= 2 ? Color.white : Color.red;
@@ -142,6 +179,12 @@ namespace PrototypeOne
         public void DenyAccess()
         {
             SoundManager.instance?.PlayAccessDeniedSound(Camera.main.transform.position);
+        }
+
+        public void ExtendGameClock(float extraTime)
+        {
+            gameClock += extraTime;
+            Debug.Log($"Game clock extended by {extraTime} seconds. New time: {gameClock}");
         }
 
         // --- Game End States ---

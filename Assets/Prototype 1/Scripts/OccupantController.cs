@@ -63,7 +63,7 @@ namespace PrototypeOne
             else
             {
                 transform.position = Vector3.MoveTowards(transform.position, roamTarget, roamSpeed * Time.deltaTime);
-                if (Vector3.Distance(transform.position, roamTarget) < 0.5f)
+                if (Vector3.Distance(transform.position, roamTarget) < 2f)
                 {
                     SetNewRoamTarget();
                 }

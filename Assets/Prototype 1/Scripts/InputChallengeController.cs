@@ -9,9 +9,7 @@ namespace PrototypeOne
 
     public class InputChallengeController : MonoBehaviour
     {
-        [SerializeField] private ShapeVisualController visualController;
-        [SerializeField] public GameObject promptPrefab;
-        [SerializeField] public Transform promptContainer;
+        [SerializeField] private ShapeVisualController visualController; [SerializeField] public GameObject promptPrefab; [SerializeField] public Transform promptContainer;
 
         [SerializeField] private Sprite[] directionalSprites;
         [SerializeField] private Sprite[] numberSprites;
@@ -49,7 +47,6 @@ namespace PrototypeOne
                 {
                     ChallengeSucceeded();
                 }
-                // else: await next input (no failure on partial progress)
             }
             else
             {
@@ -86,7 +83,6 @@ namespace PrototypeOne
             foreach (var ui in promptUIElements)
             {
                 if (ui != null) Destroy(ui);
-
             }
             promptUIElements.Clear();
 
@@ -94,7 +90,6 @@ namespace PrototypeOne
             {
                 var promptUI = Instantiate(promptPrefab, promptContainer);
                 var icon = promptUI.GetComponent<Image>();
-
 
                 if (icon != null)
                 {
@@ -105,7 +100,6 @@ namespace PrototypeOne
                 }
 
                 promptUIElements.Add(promptUI);
-
             }
         }
 
@@ -142,7 +136,6 @@ namespace PrototypeOne
             }
         }
 
-        
         private void ChallengeSucceeded()
         {
             challengeActive = false;
@@ -159,7 +152,6 @@ namespace PrototypeOne
 
             if (currentPlayer != null)
             {
-                // Optional: align player visuals to the outpost faction
                 currentPlayer.UpdateVisuals();
             }
         }
@@ -195,5 +187,7 @@ namespace PrototypeOne
             int index = int.Parse(number) - 1;
             return numberSprites[index];
         }
+
     }
-}
+
+} 
