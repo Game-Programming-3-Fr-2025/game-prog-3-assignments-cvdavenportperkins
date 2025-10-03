@@ -47,6 +47,12 @@ namespace Shared
         {
             SceneManager.LoadScene("PrototypeSevenMain");
         }
+
+        public void Final()
+        {
+            SceneManager.LoadScene("FinalMain");
+        }
+
         public void MainMenu()
         {
             SceneManager.LoadScene("Main_Menu");
