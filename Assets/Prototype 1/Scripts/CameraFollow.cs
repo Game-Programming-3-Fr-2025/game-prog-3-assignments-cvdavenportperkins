@@ -15,7 +15,7 @@ namespace PrototypeOne
             Vector3 desiredPosition = new Vector3(
                 target.position.x + offset.x,
                 target.position.y + offset.y,
-                offset.z
+                -10
             );
 
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);

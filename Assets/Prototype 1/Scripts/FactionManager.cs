@@ -8,7 +8,7 @@ namespace PrototypeOne
     public class FactionManager : MonoBehaviour
     {
 
-        public FactionType playerFaction = FactionType.Grey;
+        public static FactionType playerFaction = FactionType.Grey;
         public static int totalOccupants = 0;
         public static int infectedCount = 0;
         public static float InfectionRatio => totalOccupants == 0 ? 0f : (float)infectedCount / totalOccupants;

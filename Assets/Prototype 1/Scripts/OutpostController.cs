@@ -22,7 +22,17 @@ namespace PrototypeOne
         private readonly List<OccupantController> occupants = new();
 
         public int minOccupants;
-        public int maxOccupants;    
+        public int maxOccupants;
+
+        void Start()
+        {
+            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+            FactionType factionType = FactionType.Yellow; // or passed in from elsewhere
+            Color factionColor = FactionManager.factionColors[factionType];
+            Color currentColor = spriteRenderer.color;
+            factionColor.a = currentColor.a; // Preserve inspector alpha
+            spriteRenderer.color = factionColor;
+        }
 
         public void ApplyFactionVisuals(ShapeType shape, Color color)
         {

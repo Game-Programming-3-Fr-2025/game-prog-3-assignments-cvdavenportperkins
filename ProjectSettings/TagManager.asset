@@ -11,6 +11,7 @@ TagManager:
   - Infected
   - Outpost
   - Environment
+  - UI
   layers:
   - Default
   - TransparentFX

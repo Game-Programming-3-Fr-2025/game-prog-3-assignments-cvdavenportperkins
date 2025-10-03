@@ -7,7 +7,7 @@ namespace PrototypeFour
 
         public PlayerMovement player;
         public Rigidbody2D rb;
-        public float moveSpeed = 5f;
+        public float moveSpeed = 8f;
         private Vector2 moveInput;
 
         private void Awake()
