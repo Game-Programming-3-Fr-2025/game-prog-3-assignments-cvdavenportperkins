@@ -27,6 +27,7 @@ namespace PrototypeFive
         
         void Awake()
         {
+            Debug.Log("wtf");
             if (Instance == null) Instance = this;
             else Destroy(gameObject);
 
