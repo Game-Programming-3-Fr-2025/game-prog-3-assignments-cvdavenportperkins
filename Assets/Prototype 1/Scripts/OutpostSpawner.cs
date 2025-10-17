@@ -48,7 +48,7 @@ namespace PrototypeOne
      
             // Example: collider radius could be tied to shape or faction, here randomized for variety
             float colliderRadius = Random.Range(1.5f, 3f);
-            float inputChallengeRadius = colliderRadius * 1.2f;
+            float inputChallengeRadius = colliderRadius * 1.3f;
 
             List<FactionType> validFactions = new()
             {
