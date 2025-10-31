@@ -10,7 +10,7 @@ namespace Shared
 
         private void Start()
         {
-            dropdown.SetActive(false);
+            dropdown.SetActive(true);
         }
 
         public void PrototypeOne()
