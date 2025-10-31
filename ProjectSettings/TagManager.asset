@@ -2,18 +2,26 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
-  tags: []
+  serializedVersion: 3
+  tags:
+  - Occupant
+  - Faction_Yellow
+  - Faction_Cyan
+  - Faction_Magenta
+  - Infected
+  - Outpost
+  - Environment
+  - UI
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Outpost
+  - Occupant
+  - Level_Base
   - 
   - 
   - 
@@ -41,3 +49,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Outposts/Environment
+    uniqueID: 1946819769
+    locked: 0
+  - name: Occupants/Obstacles
+    uniqueID: 1328320577
+    locked: 0
+  - name: Player
+    uniqueID: 2299823403
+    locked: 0
+  - name: Effects
+    uniqueID: 1832975587
+    locked: 0
+  m_RenderingLayers:
+  - Default
