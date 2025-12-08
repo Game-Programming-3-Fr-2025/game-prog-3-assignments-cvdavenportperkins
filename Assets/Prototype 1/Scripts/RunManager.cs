@@ -45,7 +45,7 @@ namespace PrototypeOne
 
             var factionManager = Object.FindFirstObjectByType<FactionManager>(); 
             if (factionManager != null)
-                faction.SetPlayerFaction(FactionType.Grey);
+                
 
             GameManager.Instance.currentHealth = startingHealth;
             GameManager.Instance.UpdateHealthUI(startingHealth);

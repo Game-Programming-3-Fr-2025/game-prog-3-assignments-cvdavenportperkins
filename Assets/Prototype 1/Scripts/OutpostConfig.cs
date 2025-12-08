@@ -2,7 +2,6 @@ using UnityEngine;
 
 namespace PrototypeOne
 {
-
     [System.Serializable]
     public class OutpostConfig
     {
@@ -11,9 +10,8 @@ namespace PrototypeOne
         public ShapeType shape;
         public Color color;
 
-        public float colliderRadius;
-        public float inputChallengeRadius;
-        public float boundsColliderRadius;
+        public float colliderRadius;        // Physical bounds
+        public float inputChallengeRadius;  // Trigger zone
 
         public float infectionPulseRate = 0.5f;
         public int levelIndex;
@@ -26,7 +24,6 @@ namespace PrototypeOne
         public OutpostConfig(
             int occupantCount,
             FactionType faction,
-            float boundsColliderRadius,
             ShapeType shape,
             Color color,
             float spawnBuffer)
@@ -34,15 +31,14 @@ namespace PrototypeOne
             // Clamp occupant count to at least 1
             this.occupantCount = Mathf.Max(1, occupantCount);
             this.faction = faction;
-            this.boundsColliderRadius = boundsColliderRadius;
             this.shape = shape;
             this.color = color;
 
-            // Radius scales with count; add a buffer for spacing
+            // Collider radius scales with occupant count + buffer
             float baseRadius = Mathf.Sqrt((2f * this.occupantCount) / Mathf.PI);
             this.colliderRadius = baseRadius + Mathf.Max(0f, spawnBuffer);
 
-            // Challenge radius slightly larger than interaction space
+            // Challenge radius slightly larger than collider
             this.inputChallengeRadius = this.colliderRadius + 1.0f;
         }
     }

@@ -14,7 +14,9 @@ namespace PrototypeOne
         public AudioClip victoryClip;
 
         public AudioClip bgmClip;
+        public AudioClip mainClip;
         private AudioSource bgmSource;
+
 
         public float defaultVolume = 1f;
 

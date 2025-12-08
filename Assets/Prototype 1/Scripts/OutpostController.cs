@@ -1,39 +1,89 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 namespace PrototypeOne
 {
-
     public class OutpostController : MonoBehaviour
     {
-        [SerializeField] private GameObject dischargeEffectPrefab; [SerializeField] private float dischargeDamage = 1f; [SerializeField] private Transform visualsRoot; [SerializeField] private Light2D light2D;
+        [Header("Visuals & FX")]
+        [SerializeField] private Transform visualsRoot;
+        [SerializeField] private Light2D light2D;
+        [SerializeField] private GameObject dischargeEffectPrefab;
 
+        [Header("Combat")]
+        [SerializeField] private float dischargeDamage = 1f;
+
+        [Header("Colliders")]
+        [SerializeField] private CircleCollider2D challengeCollider;
+
+        // Runtime state
         public FactionType faction;
         private bool nodeCaptured = false;
 
+        // Shape bounds root and physics collider used for occupant confinement
         private GameObject shapeBounds;
         private Collider2D boundsCollider;
 
-        [SerializeField] private CircleCollider2D challengeCollider;
-
+        // Occupant tracking
         private readonly List<OccupantController> occupants = new();
 
+        // Optional occupant constraints (fallback if provided in config)
         public int minOccupants;
         public int maxOccupants;
 
-        void Start()
+        private void Awake()
         {
-            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-            FactionType factionType = FactionType.Yellow; // or passed in from elsewhere
-            Color factionColor = FactionManager.factionColors[factionType];
-            Color currentColor = spriteRenderer.color;
-            factionColor.a = currentColor.a; // Preserve inspector alpha
-            spriteRenderer.color = factionColor;
+            // Ensure Light2D reference if not assigned
+            if (light2D == null)
+                light2D = GetComponentInChildren<Light2D>();
         }
 
+        private void Start()
+        {
+            // Do not hardcode faction color here—Initialize() will set visuals correctly.
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                // Preserve alpha from inspector while leaving hue/sat to Initialize()
+                var c = sr.color;
+                c.a = sr.color.a;
+                sr.color = c;
+            }
+        }
+
+        /// <summary>
+        /// Initialize this outpost using data from OutpostConfig.
+        /// </summary>
+        public void Initialize(OutpostConfig config)
+        {
+            if (config.faction == FactionType.Grey)
+            {
+                Debug.LogWarning("Grey faction is player-only. Outpost will be destroyed.");
+                Destroy(gameObject);
+                return;
+            }
+
+            faction = config.faction;
+
+            // Light color
+            if (light2D != null)
+                light2D.color = config.color;
+
+            // Apply visuals (shape + color)
+            ApplyFactionVisuals(config.shape, config.color);
+
+            // Setup colliders (challenge + bounds) and scale visuals to collider radius
+            SetupCollider(config);
+
+            // Spawn occupants using config parameters
+            SpawnOutpost(config.faction, transform.position, config.levelIndex, config);
+        }
+
+        /// <summary>
+        /// Applies shape and color to child visual controller.
+        /// </summary>
         public void ApplyFactionVisuals(ShapeType shape, Color color)
         {
             var visualController = GetComponentInChildren<ShapeVisualController>();
@@ -42,56 +92,35 @@ namespace PrototypeOne
                 visualController.SetShape(shape);
                 visualController.SetColor(color);
             }
-        }
-        public void Initialize(OutpostConfig config)
-        {
-            if (config.faction == FactionType.Grey)
-            {
-                Debug.LogWarning("Grey faction is player only. Cannot be assigned to outposts");
-                Destroy(gameObject);
-                return;
-            }
-            
-            faction = config.faction;
 
-            if (light2D != null)
+            // Also set the root sprite color if present (preserve alpha)
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr != null)
             {
-                light2D.color = config.color;
+                color.a = sr.color.a;
+                sr.color = color;
             }
-
-            if (light2D == null)
-            {
-                light2D = GetComponentInChildren<Light2D>();
-            }
-
-            SetupCollider(config);
-            ApplyFactionVisuals(config.shape, config.color);
-            SpawnOutpost(config.faction, transform.position, config.levelIndex, config);
         }
 
-        private void CreateShapeBounds()
-        {
-            shapeBounds = new GameObject("ShapeBounds");
-            shapeBounds.transform.SetParent(transform);
-            shapeBounds.transform.localPosition = Vector3.zero;
-        }
-
+        /// <summary>
+        /// Ensures shape bounds object exists and sets up both challenge and solid bounds colliders.
+        /// </summary>
         private void SetupCollider(OutpostConfig config)
         {
-            CreateShapeBounds();
+            EnsureShapeBounds();
 
-            // Challenge radius on child object
+            // Challenge radius on child object named "ChallengeCollider"
             Transform challengeTransform = transform.Find("ChallengeCollider");
             if (challengeTransform == null)
             {
-                Debug.LogError("ChallengeCollider child not found.");
+                Debug.LogError("ChallengeCollider child not found on Outpost. Please add a child named 'ChallengeCollider' with a CircleCollider2D.");
                 return;
             }
 
             challengeCollider = challengeTransform.GetComponent<CircleCollider2D>();
             if (challengeCollider == null)
             {
-                Debug.LogError("CircleCollider2D missing on ChallengeCollider.");
+                Debug.LogError("CircleCollider2D missing on ChallengeCollider child.");
                 return;
             }
 
@@ -100,6 +129,7 @@ namespace PrototypeOne
 
             float radius = config.colliderRadius;
 
+            // Create solid bounds collider based on shape
             switch (config.shape)
             {
                 case ShapeType.Circle:
@@ -113,11 +143,33 @@ namespace PrototypeOne
                 case ShapeType.Triangle:
                     boundsCollider = CreatePolygonCollider(shapeBounds, GetTrianglePoints(radius));
                     break;
+
+                default:
+                    boundsCollider = CreateCircleCollider(shapeBounds, radius);
+                    break;
             }
 
-            // Scale visuals to match collider
-            float diameter = radius * 2f;
-            visualsRoot.localScale = new Vector3(diameter, diameter, 1f);
+            // Scale visuals uniformly to match collider diameter
+            if (visualsRoot != null)
+            {
+                float diameter = radius * 2f;
+                visualsRoot.localScale = new Vector3(diameter, diameter, 1f);
+            }
+        }
+
+        private void EnsureShapeBounds()
+        {
+            // Reuse existing child if present
+            var existing = transform.Find("ShapeBounds");
+            if (existing != null)
+            {
+                shapeBounds = existing.gameObject;
+                return;
+            }
+
+            shapeBounds = new GameObject("ShapeBounds");
+            shapeBounds.transform.SetParent(transform);
+            shapeBounds.transform.localPosition = Vector3.zero;
         }
 
         private CircleCollider2D CreateCircleCollider(GameObject parent, float radius)
@@ -140,10 +192,10 @@ namespace PrototypeOne
         {
             return new Vector2[]
             {
-    new Vector2(-radius, -radius),
-    new Vector2(radius, -radius),
-    new Vector2(radius, radius),
-    new Vector2(-radius, radius)
+                new Vector2(-radius, -radius),
+                new Vector2(radius, -radius),
+                new Vector2(radius, radius),
+                new Vector2(-radius, radius)
             };
         }
 
@@ -152,67 +204,62 @@ namespace PrototypeOne
             float height = Mathf.Sqrt(3f) * radius;
             return new Vector2[]
             {
-    new Vector2(-radius, -height / 3f),
-    new Vector2(radius, -height / 3f),
-    new Vector2(0f, 2f * height / 3f)
+                new Vector2(-radius, -height / 3f),
+                new Vector2(radius, -height / 3f),
+                new Vector2(0f, 2f * height / 3f)
             };
         }
 
-        private OutpostConfig GenerateConfig()
-        {
-            List<(float radius, int min, int max)> tiers = new()
-            {
-                (1.5f, 3, 5),
-                (2.5f, 6, 8),
-                (3.5f, 8, 10)
-            };
-
-            var tier = tiers[Random.Range(0, tiers.Count)];
-
-            int occupantCount = Random.Range(tier.min, tier.max + 1);
-
-            List<FactionType> validFactions = new()
-            {
-                FactionType.Cyan,
-                FactionType.Magenta,
-                FactionType.Yellow,
-            };
-
-            FactionType faction = validFactions[Random.Range(0, validFactions.Count)];
-            ShapeType shape = FactionManager.GetShape(faction);
-            Color color = FactionManager.GetColor(faction);
-
-            return new OutpostConfig(
-                occupantCount,
-                faction: faction,
-                boundsColliderRadius: tier.radius,
-                shape: shape,
-                color: color,
-                spawnBuffer: tier.radius + 0.5f
-             );
-                
-        }
-
+        /// <summary>
+        /// Spawns occupant entities within the outpost bounds and registers them.
+        /// </summary>
         public void SpawnOutpost(FactionType factionType, Vector3 location, int levelIndex, OutpostConfig config)
         {
-            int occupantCount = Mathf.Clamp(config.occupantCount, config.minOccupants, config.maxOccupants);
+            // Determine occupant count. Use config.occupantCount primarily; clamp if config has limits.
+            int occupantCount = config.occupantCount;
+            if (config.minOccupants > 0 && config.maxOccupants > 0 && config.maxOccupants >= config.minOccupants)
+            {
+                occupantCount = Mathf.Clamp(occupantCount, config.minOccupants, config.maxOccupants);
+            }
+            else if (maxOccupants > 0 && minOccupants > 0 && maxOccupants >= minOccupants)
+            {
+                // Fallback to controller fields if config doesn't provide min/max
+                occupantCount = Mathf.Clamp(occupantCount, minOccupants, maxOccupants);
+            }
 
+            // Cache prefab from Resources to avoid repeated lookups
+            GameObject occupantPrefab = Resources.Load<GameObject>("OccupantPrefab");
+            if (occupantPrefab == null)
+            {
+                Debug.LogError("Resources.Load<OccupantPrefab> failed. Ensure the prefab exists at Resources/OccupantPrefab.");
+                return;
+            }
+
+            // Spawn within collider radius
             for (int i = 0; i < occupantCount; i++)
             {
                 Vector2 randomDirection = Random.insideUnitCircle.normalized;
                 float distance = Random.Range(0.5f, config.colliderRadius * 0.9f);
                 Vector3 spawnPosition = location + new Vector3(randomDirection.x, randomDirection.y, 0f) * distance;
 
-                GameObject occupant = Instantiate(Resources.Load<GameObject>("OccupantPrefab"), spawnPosition, Quaternion.identity);
+                GameObject occupant = Instantiate(occupantPrefab, spawnPosition, Quaternion.identity);
                 var occupantController = occupant.GetComponent<OccupantController>();
+                if (occupantController == null)
+                {
+                    Debug.LogError("Occupant prefab missing OccupantController component.");
+                    continue;
+                }
 
                 occupantController.outpostCenter = this.transform;
-                occupantController.roamRadius = 3f;
+                occupantController.roamRadius = Mathf.Max(3f, config.colliderRadius * 0.8f);
                 occupantController.roamSpeed = Random.Range(1f, 3f);
+
+                // Infection parameters (could be moved to config if desired)
                 occupantController.infectionRadius1 = 2f;
                 occupantController.infectionRadius2 = 4f;
                 occupantController.infectionChance1 = 0.33f;
                 occupantController.infectionChance2 = 0.50f;
+
                 occupantController.animator = occupant.GetComponent<Animator>();
                 occupantController.faction = factionType;
                 occupantController.currentColor = FactionManager.GetColor(factionType);
@@ -222,6 +269,15 @@ namespace PrototypeOne
 
                 occupants.Add(occupantController);
             }
+        }
+
+        /// <summary>
+        /// Starts the infection pulse loop when access is granted.
+        /// </summary>
+        public void AccessGranted()
+        {
+            StopAllCoroutines();
+            StartCoroutine(InfectionPulse(0.5f));
         }
 
         private IEnumerator InfectionPulse(float pulseInterval)
@@ -252,6 +308,7 @@ namespace PrototypeOne
 
                 yield return new WaitForSeconds(pulseInterval);
 
+                // If all occupants are infected or destroyed, capture node
                 if (occupants.Count > 0 && occupants.TrueForAll(o => o == null || o.isInfected))
                 {
                     nodeCaptured = true;
@@ -263,15 +320,12 @@ namespace PrototypeOne
             }
         }
 
-        public void AccessGranted()
-        {
-            StopAllCoroutines();
-            StartCoroutine(InfectionPulse(0.5f));
-        }
-
+        /// <summary>
+        /// Updates visuals on capture.
+        /// </summary>
         public void UpdateNodeUI()
         {
-            Light2D outpostLight = GetComponentInChildren<Light2D>();
+            var outpostLight = light2D != null ? light2D : GetComponentInChildren<Light2D>();
             if (outpostLight != null)
             {
                 outpostLight.color = Color.red;
@@ -285,12 +339,13 @@ namespace PrototypeOne
                 if (sr != null) sr.color = Color.red;
                 occupant.animator?.SetTrigger("Captured");
             }
-
         }
 
         private void Update()
         {
             if (boundsCollider == null) return;
+
+            // Keep occupants within solid bounds
             foreach (var occ in occupants)
             {
                 if (occ == null) continue;
@@ -298,6 +353,9 @@ namespace PrototypeOne
             }
         }
 
+        /// <summary>
+        /// Triggers a discharge effect and damages player if within range.
+        /// </summary>
         public void TriggerDischarge(Vector3 targetPosition)
         {
             if (dischargeEffectPrefab != null)
@@ -311,7 +369,5 @@ namespace PrototypeOne
                 health.TakeDamage(dischargeDamage);
             }
         }
-
     }
-
 }

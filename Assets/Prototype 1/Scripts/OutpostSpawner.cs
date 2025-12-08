@@ -1,14 +1,11 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 namespace PrototypeOne
 {
     public class OutpostSpawner : MonoBehaviour
     {
-        [SerializeField] private GameObject outpostPrefab; 
-        [SerializeField] private OutpostConfig outpostConfig; 
+        [SerializeField] private GameObject outpostPrefab;
         [SerializeField] private float playerColliderRadius = 1.66f;
 
         [Header("Spawner Settings")]
@@ -29,26 +26,24 @@ namespace PrototypeOne
         private void Awake()
         {
             spawnBuffer = playerColliderRadius * 5f;
-
         }
 
         private void Start()
         {
-            SpawnTier();
-
             Bounds bounds = GameManager.Instance.GetWorldBounds();
             worldWidth = bounds.size.x;
             worldHeight = bounds.size.y;
+
+            SpawnTier();
         }
 
         // Generates a randomized OutpostConfig for spawning.
         private OutpostConfig GenerateConfig()
         {
             int occupantCount = Random.Range(3, 8);
-     
-            // Example: collider radius could be tied to shape or faction, here randomized for variety
+
             float colliderRadius = Random.Range(1.5f, 3f);
-            float inputChallengeRadius = colliderRadius * 1.3f;
+            float inputChallengeRadius = colliderRadius * 1.2f;
 
             List<FactionType> validFactions = new()
             {
@@ -61,14 +56,7 @@ namespace PrototypeOne
             ShapeType shape = FactionManager.GetShape(faction);
             Color color = FactionManager.GetColor(faction);
 
-            return new OutpostConfig(
-                occupantCount,
-                faction,
-                colliderRadius,
-                shape,
-                color,
-                inputChallengeRadius
-            );
+            return new OutpostConfig(occupantCount, faction, shape, color, inputChallengeRadius);
         }
 
         // Finds a valid spawn position that doesn't overlap existing outposts.
@@ -108,7 +96,6 @@ namespace PrototypeOne
             return true;
         }
 
-
         private Vector3 GetRandomPositionInField(float radius)
         {
             float x = Random.Range(-worldWidth / 2f + radius, worldWidth / 2f - radius);
@@ -116,13 +103,13 @@ namespace PrototypeOne
             return new Vector3(x, y, 0f);
         }
 
-        void SpawnOutpost(Vector3 position, OutpostConfig config)
+        private void SpawnOutpost(Vector3 position, OutpostConfig config)
         {
             GameObject outpostGO = Instantiate(outpostPrefab, position, Quaternion.identity);
             OutpostController controller = outpostGO.GetComponent<OutpostController>();
             if (controller != null)
             {
-                controller.Initialize(outpostConfig);
+                controller.Initialize(config);
             }
         }
 
@@ -133,10 +120,10 @@ namespace PrototypeOne
                 clearedTiers++;
                 currentTier++;
 
-                //Increase outpost count
+                // Increase outpost count
                 outpostsToSpawn = Mathf.Min(3 + (2 * currentTier), 15);
 
-                //Expand level size
+                // Expand level size
                 if (clearedTiers % 3 == 0)
                 {
                     worldWidth *= 1.15f;
@@ -146,12 +133,12 @@ namespace PrototypeOne
             }
             else
             {
-                //Reset on fail
+                // Reset on fail
                 currentTier = 0;
                 clearedTiers = 0;
                 outpostsToSpawn = 0;
                 worldWidth = baseWorldWidth;
-                worldHeight = baseWorldHeight;  
+                worldHeight = baseWorldHeight;
             }
 
             placedOutposts.Clear();
@@ -160,28 +147,18 @@ namespace PrototypeOne
 
         public void SpawnTier()
         {
+            placedOutposts.Clear();
+
             for (int i = 0; i < outpostsToSpawn; i++)
             {
                 OutpostConfig config = GenerateConfig();
                 Vector3 spawnPos = GetValidPosition(config.inputChallengeRadius);
-                
-                SpawnOutpost(spawnPos, config);
 
-                GameObject outpostGO = Instantiate(outpostPrefab, spawnPos, Quaternion.identity);
-                var controller = outpostGO.GetComponent<OutpostController>();
-                controller.Initialize(config);
+                SpawnOutpost(spawnPos, config);
 
                 placedOutposts.Add((spawnPos, config.inputChallengeRadius));
                 GameManager.Instance?.RegisterOutpost();
-            }      
-        }
-
-
-
-        private void LateUpdate()
-        {
-           
+            }
         }
     }
-
-}          
+}
