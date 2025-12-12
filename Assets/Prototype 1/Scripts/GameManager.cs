@@ -66,6 +66,8 @@ namespace PrototypeOne
             if (baseLevelCollider != null)
             {
                 worldBounds = baseLevelCollider.bounds;
+                Debug.Log($"World bounds set: {worldBounds.size}");
+
             }
         }
 

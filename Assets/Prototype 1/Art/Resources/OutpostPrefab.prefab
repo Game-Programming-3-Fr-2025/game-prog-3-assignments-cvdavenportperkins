@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 324735638706620156}
   - component: {fileID: 7313588641258873537}
   - component: {fileID: 7423023003500731004}
-  - component: {fileID: 2667273555931613088}
   - component: {fileID: -8432847861876180729}
   m_Layer: 6
   m_Name: OutpostPrefab
@@ -51,12 +50,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3442e4d0279bb584baf1760d5845a1d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dischargeEffectPrefab: {fileID: 0}
-  dischargeDamage: 1
   visualsRoot: {fileID: 4595554814164118297}
   light2D: {fileID: 7423023003500731004}
-  faction: 0
+  dischargeEffectPrefab: {fileID: 0}
+  dischargeDamage: 1
   challengeCollider: {fileID: 8010907011775415598}
+  faction: 0
   minOccupants: 0
   maxOccupants: 0
 --- !u!212 &7313588641258873537
@@ -166,33 +165,6 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
---- !u!50 &2667273555931613088
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 881456048002052570}
-  m_BodyType: 2
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 4
 --- !u!82 &-8432847861876180729
 AudioSource:
   m_ObjectHideFlags: 0
@@ -412,7 +384,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.5, y: 1}
+  m_Size: {x: 0.8, y: 1}
   m_Direction: 0
 --- !u!58 &52191254831902450
 CircleCollider2D:
@@ -449,7 +421,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 0.8
 --- !u!60 &3007639867449771106
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -1079,8 +1051,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualController: {fileID: 4056743946285670413}
-  promptPrefab: {fileID: 0}
+  promptPrefab: {fileID: 1732991136003748188, guid: 3c1acba493857c3429c848a0b9e931d9, type: 3}
   promptContainer: {fileID: 0}
-  directionalSprites: []
-  numberSprites: []
+  directionalSprites:
+  - {fileID: -3144021433468690345, guid: b1fbd004f52c38a46b99a197483e5634, type: 3}
+  - {fileID: 5402353711748861349, guid: cd2ca139208c7834db6cdb0a2603950f, type: 3}
+  - {fileID: 4048820115959660924, guid: 544657d2a2ef7194d9e9e7f19dc816b6, type: 3}
+  - {fileID: -448419336510017061, guid: 7b65d077c57851c47b103de3f3e3be74, type: 3}
+  numberSprites:
+  - {fileID: 0}
   challengeDuration: 3.5
