@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7313588641258873537}
   - component: {fileID: 7423023003500731004}
   - component: {fileID: -8432847861876180729}
+  - component: {fileID: -9084509577334554182}
   m_Layer: 6
   m_Name: OutpostPrefab
   m_TagString: Outpost
@@ -262,6 +263,28 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &-9084509577334554182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 881456048002052570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 893b2f804dd7c4f4b9fe8686f91e62fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visualController: {fileID: 4056743946285670413}
+  promptPrefab: {fileID: 1732991136003748188, guid: 3c1acba493857c3429c848a0b9e931d9, type: 3}
+  promptContainer: {fileID: 0}
+  directionalSprites:
+  - {fileID: -5877474888300940307, guid: bbe0004733830984bba12ce22f3bdd2e, type: 3}
+  - {fileID: 3297475049601070473, guid: 7b47cd5a088f65f4eb93d5559b954469, type: 3}
+  - {fileID: -4912097188813465391, guid: 4a5ebcc9986271d4883cb116d1230708, type: 3}
+  - {fileID: -644675371902539548, guid: 593c68e610cf1814797a7b256d34482e, type: 3}
+  numberSprites: []
+  challengeDuration: 3.5
 --- !u!1 &3437137860676705777
 GameObject:
   m_ObjectHideFlags: 0
@@ -274,7 +297,7 @@ GameObject:
   - component: {fileID: 4056743946285670413}
   m_Layer: 6
   m_Name: ShapeVisualController
-  m_TagString: Untagged
+  m_TagString: Outpost
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -979,10 +1002,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3833514328237984693}
   - component: {fileID: 8010907011775415598}
-  - component: {fileID: 9166240133782684889}
   m_Layer: 6
   m_Name: ChallengeCollider
-  m_TagString: Untagged
+  m_TagString: Outpost
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1038,26 +1060,3 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.3
---- !u!114 &9166240133782684889
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8600999811419819036}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 893b2f804dd7c4f4b9fe8686f91e62fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  visualController: {fileID: 4056743946285670413}
-  promptPrefab: {fileID: 1732991136003748188, guid: 3c1acba493857c3429c848a0b9e931d9, type: 3}
-  promptContainer: {fileID: 0}
-  directionalSprites:
-  - {fileID: -3144021433468690345, guid: b1fbd004f52c38a46b99a197483e5634, type: 3}
-  - {fileID: 5402353711748861349, guid: cd2ca139208c7834db6cdb0a2603950f, type: 3}
-  - {fileID: 4048820115959660924, guid: 544657d2a2ef7194d9e9e7f19dc816b6, type: 3}
-  - {fileID: -448419336510017061, guid: 7b65d077c57851c47b103de3f3e3be74, type: 3}
-  numberSprites:
-  - {fileID: 0}
-  challengeDuration: 3.5

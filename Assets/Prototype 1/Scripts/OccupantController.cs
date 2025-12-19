@@ -8,8 +8,8 @@ namespace PrototypeOne
     {
         [Header("Roaming Settings")]
         public Transform outpostCenter;
-        public float roamRadius = 5f;
-        public float roamSpeed = 2f;
+        public float roamRadius = 10f;
+        public float roamSpeed = 5f;
 
         [Header("Infection Settings")]
         [SerializeField] public float infectionRadius1 = 2f;

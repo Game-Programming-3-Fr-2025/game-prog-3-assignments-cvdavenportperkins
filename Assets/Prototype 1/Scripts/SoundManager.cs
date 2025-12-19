@@ -39,6 +39,12 @@ namespace PrototypeOne
             bgmSource.volume = defaultVolume;
         }
 
+        private void Start()
+        {
+            audioSource = GetComponent<AudioSource>();
+            audioSource.Play();
+        }
+
         public void PlaySoundAtPoint(AudioClip clip, Vector3 position, float volume = -1f)
         {
             if (clip == null)

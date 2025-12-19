@@ -18,13 +18,19 @@ namespace PrototypeOne
         [Header("Colliders")]
         [SerializeField] private CircleCollider2D challengeCollider;
 
+        // NEW: Serialized references to prefab colliders in ShapeBounds
+        [Header("Shape Bounds Colliders")]
+        [SerializeField] private CapsuleCollider2D capsuleCollider;
+        [SerializeField] private CircleCollider2D circleCollider;
+        [SerializeField] private PolygonCollider2D polygonCollider;
+
         // Runtime state
         public FactionType faction;
         private bool nodeCaptured = false;
 
         // Shape bounds root and physics collider used for occupant confinement
         private GameObject shapeBounds;
-        private Collider2D boundsCollider;
+        private Collider boundsCollider;
 
         // Occupant tracking
         private readonly List<OccupantController> occupants = new();
@@ -35,27 +41,22 @@ namespace PrototypeOne
 
         private void Awake()
         {
-            // Ensure Light2D reference if not assigned
             if (light2D == null)
                 light2D = GetComponentInChildren<Light2D>();
         }
 
         private void Start()
         {
-            // Do not hardcode faction color here—Initialize() will set visuals correctly.
+
             var sr = GetComponent<SpriteRenderer>();
             if (sr != null)
             {
-                // Preserve alpha from inspector while leaving hue/sat to Initialize()
                 var c = sr.color;
                 c.a = sr.color.a;
                 sr.color = c;
             }
         }
 
-        /// <summary>
-        /// Initialize this outpost using data from OutpostConfig.
-        /// </summary>
         public void Initialize(OutpostConfig config)
         {
             if (config.faction == FactionType.Grey)
@@ -67,23 +68,17 @@ namespace PrototypeOne
 
             faction = config.faction;
 
-            // Light color
             if (light2D != null)
                 light2D.color = config.color;
 
-            // Apply visuals (shape + color)
             ApplyFactionVisuals(config.shape, config.color);
 
-            // Setup colliders (challenge + bounds) and scale visuals to collider radius
+            // NEW: Use prefab colliders instead of runtime AddComponent
             SetupCollider(config);
 
-            // Spawn occupants using config parameters
             SpawnOutpost(config.faction, transform.position, config.levelIndex, config);
         }
 
-        /// <summary>
-        /// Applies shape and color to child visual controller.
-        /// </summary>
         public void ApplyFactionVisuals(ShapeType shape, Color color)
         {
             var visualController = GetComponentInChildren<ShapeVisualController>();
@@ -93,7 +88,6 @@ namespace PrototypeOne
                 visualController.SetColor(color);
             }
 
-            // Also set the root sprite color if present (preserve alpha)
             var sr = GetComponent<SpriteRenderer>();
             if (sr != null)
             {
@@ -103,59 +97,62 @@ namespace PrototypeOne
         }
 
         /// <summary>
-        /// Ensures shape bounds object exists and sets up both challenge and solid bounds colliders.
+        /// Sets up challenge collider and enables the correct shape bounds collider.
         /// </summary>
         private void SetupCollider(OutpostConfig config)
         {
-            EnsureShapeBounds();
-
-            // Challenge radius on child object named "ChallengeCollider"
-            Transform challengeTransform = transform.Find("ChallengeCollider");
-            if (challengeTransform == null)
-            {
-                Debug.LogError("ChallengeCollider child not found on Outpost. Please add a child named 'ChallengeCollider' with a CircleCollider2D.");
-                return;
-            }
-
-            challengeCollider = challengeTransform.GetComponent<CircleCollider2D>();
+            // Challenge collider setup
             if (challengeCollider == null)
             {
-                Debug.LogError("CircleCollider2D missing on ChallengeCollider child.");
-                return;
+                Transform challengeTransform = transform.Find("ChallengeCollider");
+                if (challengeTransform == null)
+                {
+                    Debug.LogError("ChallengeCollider child not found on Outpost prefab.");
+                    return;
+                }
+                challengeCollider = challengeTransform.GetComponent<CircleCollider2D>();
             }
 
-            challengeCollider.isTrigger = true;
-            challengeCollider.radius = config.inputChallengeRadius;
+            if (challengeCollider != null)
+            {
+                challengeCollider.isTrigger = true;
+                challengeCollider.radius = config.inputChallengeRadius;
+            }
 
-            float radius = config.colliderRadius;
+            // Disable all shape colliders first
+            if (capsuleCollider) capsuleCollider.enabled = false;
+            if (circleCollider) circleCollider.enabled = false;
+            if (polygonCollider) polygonCollider.enabled = false;
 
-            // Create solid bounds collider based on shape
+            // Enable only the collider that matches the shape
             switch (config.shape)
             {
                 case ShapeType.Circle:
-                    boundsCollider = CreateCircleCollider(shapeBounds, radius);
+                    if (circleCollider) { circleCollider.enabled = true; boundsCollider = circleCollider; }
                     break;
 
-                case ShapeType.Square:
-                    boundsCollider = CreatePolygonCollider(shapeBounds, GetSquarePoints(radius));
+                case ShapeType.Capsule:
+                    if (capsuleCollider) { capsuleCollider.enabled = true; boundsCollider = capsuleCollider; }
                     break;
 
                 case ShapeType.Triangle:
-                    boundsCollider = CreatePolygonCollider(shapeBounds, GetTrianglePoints(radius));
+                case ShapeType.Square:
+                    if (polygonCollider) { polygonCollider.enabled = true; boundsCollider = polygonCollider; }
                     break;
 
                 default:
-                    boundsCollider = CreateCircleCollider(shapeBounds, radius);
+                    if (circleCollider) { circleCollider.enabled = true; boundsCollider = circleCollider; }
                     break;
             }
 
-            // Scale visuals uniformly to match collider diameter
+            // Scale visuals to match collider radius
             if (visualsRoot != null)
             {
-                float diameter = radius * 2f;
+                float diameter = config.colliderRadius * 2f;
                 visualsRoot.localScale = new Vector3(diameter, diameter, 1f);
             }
         }
+
 
         private void EnsureShapeBounds()
         {

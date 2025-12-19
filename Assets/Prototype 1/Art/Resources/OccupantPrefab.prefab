@@ -81,7 +81,7 @@ SpriteRenderer:
   m_SortingLayerID: 1328320577
   m_SortingLayer: 2
   m_SortingOrder: 1
-  m_Sprite: {fileID: -2413806693520163455, guid: 1c3540785c6b36947aaad9fe105666f0, type: 3}
+  m_Sprite: {fileID: 7336464509718241649, guid: ff41a941fdd27af4b9c1fdaa651f0a90, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outpostCenter: {fileID: 4595554814164118297, guid: 572c72599d3ed9b46a0318e9fe731d8f, type: 3}
-  roamRadius: 5
+  roamRadius: 8
   roamSpeed: 2
   infectionRadius1: 2
   infectionRadius2: 4
