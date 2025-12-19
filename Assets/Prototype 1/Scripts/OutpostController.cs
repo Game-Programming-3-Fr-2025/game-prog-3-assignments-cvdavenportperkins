@@ -30,7 +30,7 @@ namespace PrototypeOne
 
         // Shape bounds root and physics collider used for occupant confinement
         private GameObject shapeBounds;
-        private Collider boundsCollider;
+        private Collider2D boundsCollider;
 
         // Occupant tracking
         private readonly List<OccupantController> occupants = new();
